@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jump Search vs Binary Search — complexity comparison</title>
+<style>
+:root { --a:#2f6fed; --b:#c026d3; --bg:#0f1117; --fg:#e6e8ef; --muted:#8b90a3;
+        --card:#171a23; --line:#262b39; --green:#2ecc71; --yellow:#f1c40f; }
+* { box-sizing:border-box; }
+body { margin:0; padding:32px 20px 64px; background:var(--bg); color:var(--fg);
+       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.wrap { max-width:1000px; margin:0 auto; }
+h1 { font-size:26px; margin:0 0 4px; letter-spacing:-.02em; }
+h2 { font-size:15px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted);
+     margin:36px 0 12px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+.sub { color:var(--muted); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+        padding:18px 20px; margin-bottom:16px; }
+.conclusion { font-size:17px; line-height:1.65; }
+.badge { display:inline-block; padding:3px 11px; border-radius:999px; font-size:12.5px;
+         font-weight:600; background:#1f2534; border:1px solid var(--line); margin-top:10px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.dim { color:var(--muted); }
+.a-col { color:#9dbcff; } .b-col { color:#f0a6f7; }
+.win { font-weight:600; } .win-A { color:#7fd6a2; } .win-B { color:#e79bf0; } .win-tie { color:var(--yellow); }
+ul { padding-left:20px; } li { margin:5px 0; }
+.warn { border-left:3px solid var(--yellow); background:#20202b; }
+.barwrap { position:relative; background:#10131b; border-radius:4px; height:22px; min-width:160px; }
+.bar { position:absolute; left:0; top:0; bottom:0; border-radius:4px; opacity:.55; }
+.bar.a { background:var(--a); } .bar.b { background:var(--b); }
+.barwrap span { position:relative; z-index:1; padding-left:8px; font-size:12.5px; line-height:22px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; margin-right:16px; font-size:13px; }
+.sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
+footer { color:var(--muted); font-size:12.5px; margin-top:32px; border-top:1px solid var(--line); padding-top:14px; }
+</style></head><body><div class="wrap">
+<h1>Jump Search <span class="dim">vs</span> Binary Search</h1>
+<p class="sub">Task: find a key in a sorted array &nbsp;·&nbsp; family: search / retrieval
+ &nbsp;·&nbsp; theoretical (asymptotic) comparison</p>
+
+<div class="card warn"><b>Warnings</b><ul><li>space/average is not declared for Jump Search; its worst-case bound (O(1)) is used as a conservative stand-in.</li></ul></div>
+
+<div class="card">
+  <div class="conclusion">For average-case time, Binary Search (O(log n)) beats Jump Search (O(√n)). The advantage only materialises above n ≈ 16: for smaller inputs the theoretically worse algorithm can still win on constant factors.</div>
+  <div class="badge">Overall winner: Binary Search — weighted score A=1 vs B=5</div>
+</div>
+
+<h2>Complexity profiles</h2>
+<div class="card"><table>
+<tr><th></th><th class="a-col">Jump Search</th><th class="b-col">Binary Search</th></tr>
+<tr><th>category</th><td>search / retrieval</td><td>search / retrieval</td></tr><tr><th>task</th><td>find a key in a sorted array</td><td>find a key in a sorted array</td></tr><tr><th>time best</th><td>O(1)</td><td>O(1)</td></tr><tr><th>time average</th><td>O(√n)</td><td>O(log n)</td></tr><tr><th>time worst</th><td>O(√n)</td><td>O(log n)</td></tr><tr><th>space worst</th><td>O(1)</td><td>O(1)</td></tr><tr><th>input sensitive</th><td>yes — best/average/worst differ</td><td>yes — best/average/worst differ</td></tr><tr><th>space average</th><td>—</td><td>O(log n)</td></tr>
+</table></div>
+
+<h2>Case-by-case verdict</h2>
+<div class="card"><table>
+<tr><th>dimension</th><th>case</th><th>Jump Search</th><th>Binary Search</th>
+<th>winner</th><th>A÷B as n&rarr;&infin;</th><th>crossover n</th></tr>
+<tr><td>time</td><td>best</td><td class='mono'>O(1)</td><td class='mono'>O(1)</td><td class='win win-tie'>tie</td><td class='mono dim'>equal</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>average</td><td class='mono'>O(√n)</td><td class='mono'>O(log n)</td><td class='win win-B'>Binary Search</td><td class='mono dim'>A/B → ∞ (≈ n^0.50)</td><td class='mono dim'>16</td></tr><tr><td>time</td><td>worst</td><td class='mono'>O(√n)</td><td class='mono'>O(log n)</td><td class='win win-B'>Binary Search</td><td class='mono dim'>A/B → ∞ (≈ n^0.50)</td><td class='mono dim'>16</td></tr><tr><td>space</td><td>average</td><td class='mono'>O(1)</td><td class='mono'>O(log n)</td><td class='win win-A'>Jump Search</td><td class='mono dim'>A/B → 0 (≈ n^0.00)</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>worst</td><td class='mono'>O(1)</td><td class='mono'>O(1)</td><td class='win win-tie'>tie</td><td class='mono dim'>equal</td><td class='mono dim'>—</td></tr>
+</table></div>
+
+<h2>Operation-count growth — time/average case</h2>
+<div class="card">
+<div class="legend"><span><i class="sw" style="background:var(--a)"></i>Jump Search · O(√n)</span>
+<span><i class="sw" style="background:var(--b)"></i>Binary Search · O(log n)</span></div>
+<svg viewBox="0 0 940 300" width="100%" style="margin-top:10px" role="img"
+ aria-label="log-log growth chart">
+<line x1="62" y1="14.0" x2="924" y2="14.0" stroke="#262b39"/><text x="54" y="18.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e5</text><line x1="62" y1="64.4" x2="924" y2="64.4" stroke="#262b39"/><text x="54" y="68.4" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e4</text><line x1="62" y1="114.8" x2="924" y2="114.8" stroke="#262b39"/><text x="54" y="118.8" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e3</text><line x1="62" y1="165.2" x2="924" y2="165.2" stroke="#262b39"/><text x="54" y="169.2" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e2</text><line x1="62" y1="215.6" x2="924" y2="215.6" stroke="#262b39"/><text x="54" y="219.6" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e1</text><line x1="62" y1="266.0" x2="924" y2="266.0" stroke="#262b39"/><text x="54" y="270.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e0</text>
+<path d="M62.0,248.6 L169.8,221.5 L277.5,194.3 L385.2,167.2 L493.0,140.0 L600.8,112.8 L708.5,85.7 L924.0,31.4" fill="none" stroke="#2f6fed" stroke-width="2.4"/>
+<path d="M62.0,247.5 L169.8,231.1 L277.5,221.5 L385.2,214.8 L493.0,209.5 L600.8,205.2 L708.5,201.6 L924.0,195.6" fill="none" stroke="#c026d3" stroke-width="2.4" stroke-dasharray="6 4"/>
+<circle cx="62.0" cy="248.6" r="3" fill="#2f6fed"/><circle cx="62.0" cy="247.5" r="3" fill="#c026d3"/><circle cx="169.8" cy="221.5" r="3" fill="#2f6fed"/><circle cx="169.8" cy="231.1" r="3" fill="#c026d3"/><circle cx="277.5" cy="194.3" r="3" fill="#2f6fed"/><circle cx="277.5" cy="221.5" r="3" fill="#c026d3"/><circle cx="385.2" cy="167.2" r="3" fill="#2f6fed"/><circle cx="385.2" cy="214.8" r="3" fill="#c026d3"/><circle cx="493.0" cy="140.0" r="3" fill="#2f6fed"/><circle cx="493.0" cy="209.5" r="3" fill="#c026d3"/><circle cx="600.8" cy="112.8" r="3" fill="#2f6fed"/><circle cx="600.8" cy="205.2" r="3" fill="#c026d3"/><circle cx="708.5" cy="85.7" r="3" fill="#2f6fed"/><circle cx="708.5" cy="201.6" r="3" fill="#c026d3"/><circle cx="924.0" cy="31.4" r="3" fill="#2f6fed"/><circle cx="924.0" cy="195.6" r="3" fill="#c026d3"/><text x="62.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10</text><text x="169.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100</text><text x="277.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000</text><text x="385.2" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000</text><text x="493.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100,000</text><text x="600.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000</text><text x="708.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000,000</text><text x="924.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000,000</text>
+<line x1="62" y1="266" x2="924" y2="266" stroke="#3a4054"/>
+<line x1="62" y1="14" x2="62" y2="266" stroke="#3a4054"/>
+</svg>
+<table style="margin-top:14px">
+<tr><th>n</th><th>Jump Search</th><th>Binary Search</th><th>A ÷ B</th><th>cheaper</th></tr>
+<tr><td class='mono dim'>10</td><td><div class='barwrap'><div class='bar a' style='width:11.1%'></div><span class='mono'>3.16</span></div></td><td><div class='barwrap'><div class='bar b' style='width:11.6%'></div><span class='mono'>3.32</span></div></td><td class='mono'>0.952</td><td class='win'>A</td></tr><tr><td class='mono dim'>100</td><td><div class='barwrap'><div class='bar a' style='width:22.2%'></div><span class='mono'>10</span></div></td><td><div class='barwrap'><div class='bar b' style='width:18.3%'></div><span class='mono'>6.64</span></div></td><td class='mono'>1.51</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000</td><td><div class='barwrap'><div class='bar a' style='width:33.3%'></div><span class='mono'>31.6</span></div></td><td><div class='barwrap'><div class='bar b' style='width:22.2%'></div><span class='mono'>9.97</span></div></td><td class='mono'>3.17</td><td class='win'>B</td></tr><tr><td class='mono dim'>10,000</td><td><div class='barwrap'><div class='bar a' style='width:44.4%'></div><span class='mono'>100</span></div></td><td><div class='barwrap'><div class='bar b' style='width:25.0%'></div><span class='mono'>13.3</span></div></td><td class='mono'>7.53</td><td class='win'>B</td></tr><tr><td class='mono dim'>100,000</td><td><div class='barwrap'><div class='bar a' style='width:55.6%'></div><span class='mono'>316</span></div></td><td><div class='barwrap'><div class='bar b' style='width:27.1%'></div><span class='mono'>16.6</span></div></td><td class='mono'>19</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000,000</td><td><div class='barwrap'><div class='bar a' style='width:66.7%'></div><span class='mono'>1e+03</span></div></td><td><div class='barwrap'><div class='bar b' style='width:28.9%'></div><span class='mono'>19.9</span></div></td><td class='mono'>50.2</td><td class='win'>B</td></tr><tr><td class='mono dim'>10,000,000</td><td><div class='barwrap'><div class='bar a' style='width:77.8%'></div><span class='mono'>3.16e+03</span></div></td><td><div class='barwrap'><div class='bar b' style='width:30.4%'></div><span class='mono'>23.3</span></div></td><td class='mono'>136</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000,000,000</td><td><div class='barwrap'><div class='bar a' style='width:100.0%'></div><span class='mono'>3.16e+04</span></div></td><td><div class='barwrap'><div class='bar b' style='width:32.8%'></div><span class='mono'>29.9</span></div></td><td class='mono'>1,058</td><td class='win'>B</td></tr>
+</table>
+<p class="dim" style="font-size:12.5px;margin-top:10px">Bar lengths are log-scaled.
+Values are abstract operation counts from the declared growth functions, not seconds.</p>
+</div>
+
+<h2>Reasoning</h2><div class="card"><ul><li>time/best: Jump Search O(1) vs Binary Search O(1) → asymptotically equivalent (same growth class).</li><li>time/average: Jump Search O(√n) vs Binary Search O(log n) → Binary Search is asymptotically better. the ordering flips at n ≈ 16: below it Jump Search is cheaper, above it Binary Search takes over and stays ahead.</li><li>time/worst: Jump Search O(√n) vs Binary Search O(log n) → Binary Search is asymptotically better. the ordering flips at n ≈ 16: below it Jump Search is cheaper, above it Binary Search takes over and stays ahead.</li><li>space/average: Jump Search O(1) vs Binary Search O(log n) → Jump Search is asymptotically better. the cost ratio grows like n^0.00, so the advantage widens without bound as n grows.</li><li>space/worst: Jump Search O(1) vs Binary Search O(1) → asymptotically equivalent (same growth class).</li></ul></div>
+
+<h2>Caveats &amp; constant factors</h2><ul><li><b>Jump Search:</b> Block jumps of √n then linear scan. Better than binary search on media where seeking backwards is expensive (tapes, some databases).</li><li><b>Binary Search:</b> Requires sorted, random-access data. Iterative version is O(1) space; recursive is O(log n) stack. Cache-unfriendly on huge arrays (random jumps).</li></ul>
+
+<footer>Generated by <b>algo-compare</b>. Asymptotic notation hides constant factors,
+memory-hierarchy effects and allocation cost — confirm with an empirical benchmark before
+deciding.</footer>
+</div></body></html>

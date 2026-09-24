@@ -1,0 +1,20 @@
+Dynamic programming by average-case cost
+
+Dynamic programming by average-case cost
+algorithm                                                  time/average  space/average
+---------------------------------------------------------  ------------  -------------
+Fibonacci (memoisation / bottom-up)                        n*            1*           
+Fibonacci (naive recursion)                                1.618^n       n            
+Matrix Chain Multiplication                                n^3           n^2          
+0/1 Knapsack (DP)                                          n·W           W            
+Unbounded Knapsack (DP)                                    n·W           W            
+Subset Sum (DP)                                            n·T           T            
+Edit Distance (Levenshtein)                                n·m           m            
+Longest Increasing Subsequence (patience / binary search)  nlogn         n            
+Longest Increasing Subsequence (O(n²) DP)                  n^2           n            
+Coin Change (min coins)                                    n·A           A            
+Rod Cutting                                                n^2           n            
+Optimal BST                                                n^3           n^2          
+Longest Palindromic Subsequence                            n^2           n            
+Bitmask DP (subset enumeration)                            2^n·n         2^n          
+* = best asymptotic bound in that column

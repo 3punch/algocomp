@@ -1,0 +1,19 @@
+Sorting algorithms by average-case cost
+
+Sorting algorithms by average-case cost
+algorithm                 time/average  space/average
+------------------------  ------------  -------------
+Bubble Sort               n^2           1*           
+Selection Sort            n^2           1*           
+Insertion Sort            n^2           1*           
+Shell Sort                nlog²n        1*           
+Merge Sort                nlogn         n            
+Quick Sort                nlogn         logn         
+Heap Sort                 nlogn         1*           
+Introsort                 nlogn         logn         
+Timsort                   nlogn         n            
+Counting Sort             n+k*          n+k          
+Bucket Sort               n+k*          n·k          
+Radix Sort (LSD, base b)  d·(n+k)       n+k          
+Cycle Sort                n^2           1*           
+* = best asymptotic bound in that column

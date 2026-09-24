@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dijkstra (binary heap) vs Bellman-Ford — complexity comparison</title>
+<style>
+:root { --a:#2f6fed; --b:#c026d3; --bg:#0f1117; --fg:#e6e8ef; --muted:#8b90a3;
+        --card:#171a23; --line:#262b39; --green:#2ecc71; --yellow:#f1c40f; }
+* { box-sizing:border-box; }
+body { margin:0; padding:32px 20px 64px; background:var(--bg); color:var(--fg);
+       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.wrap { max-width:1000px; margin:0 auto; }
+h1 { font-size:26px; margin:0 0 4px; letter-spacing:-.02em; }
+h2 { font-size:15px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted);
+     margin:36px 0 12px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+.sub { color:var(--muted); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+        padding:18px 20px; margin-bottom:16px; }
+.conclusion { font-size:17px; line-height:1.65; }
+.badge { display:inline-block; padding:3px 11px; border-radius:999px; font-size:12.5px;
+         font-weight:600; background:#1f2534; border:1px solid var(--line); margin-top:10px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.dim { color:var(--muted); }
+.a-col { color:#9dbcff; } .b-col { color:#f0a6f7; }
+.win { font-weight:600; } .win-A { color:#7fd6a2; } .win-B { color:#e79bf0; } .win-tie { color:var(--yellow); }
+ul { padding-left:20px; } li { margin:5px 0; }
+.warn { border-left:3px solid var(--yellow); background:#20202b; }
+.barwrap { position:relative; background:#10131b; border-radius:4px; height:22px; min-width:160px; }
+.bar { position:absolute; left:0; top:0; bottom:0; border-radius:4px; opacity:.55; }
+.bar.a { background:var(--a); } .bar.b { background:var(--b); }
+.barwrap span { position:relative; z-index:1; padding-left:8px; font-size:12.5px; line-height:22px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; margin-right:16px; font-size:13px; }
+.sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
+footer { color:var(--muted); font-size:12.5px; margin-top:32px; border-top:1px solid var(--line); padding-top:14px; }
+</style></head><body><div class="wrap">
+<h1>Dijkstra (binary heap) <span class="dim">vs</span> Bellman-Ford</h1>
+<p class="sub">Task: single-source shortest path, non-negative weights &nbsp;·&nbsp; family: graph
+ &nbsp;·&nbsp; theoretical (asymptotic) comparison</p>
+
+<div class="card warn"><b>Warnings</b><ul><li>Same problem, different preconditions: &quot;single-source shortest path, non-negative weights&quot; vs &quot;single-source shortest path, possibly negative weights&quot;. Check that your workload satisfies both before trusting the verdict.</li></ul></div>
+
+<div class="card">
+  <div class="conclusion">For average-case time, Dijkstra (binary heap) (O((V+E)·log(V))) beats Bellman-Ford (O(V·E)). The advantage only materialises above n ≈ 4: for smaller inputs the theoretically worse algorithm can still win on constant factors.</div>
+  <div class="badge">Overall winner: Dijkstra (binary heap) — weighted score A=5.5 vs B=0</div>
+</div>
+
+<h2>Complexity profiles</h2>
+<div class="card"><table>
+<tr><th></th><th class="a-col">Dijkstra (binary heap)</th><th class="b-col">Bellman-Ford</th></tr>
+<tr><th>category</th><td>graph</td><td>graph</td></tr><tr><th>task</th><td>single-source shortest path, non-negative weights</td><td>single-source shortest path, possibly negative weights</td></tr><tr><th>time best</th><td>O((V+E)·log(V))</td><td>O(V·E)</td></tr><tr><th>time average</th><td>O((V+E)·log(V))</td><td>O(V·E)</td></tr><tr><th>time worst</th><td>O((V+E)·log(V))</td><td>O(V·E)</td></tr><tr><th>space worst</th><td>O(V)</td><td>O(V)</td></tr>
+</table></div>
+
+<h2>Case-by-case verdict</h2>
+<div class="card"><table>
+<tr><th>dimension</th><th>case</th><th>Dijkstra (binary heap)</th><th>Bellman-Ford</th>
+<th>winner</th><th>A÷B as n&rarr;&infin;</th><th>crossover n</th></tr>
+<tr><td>time</td><td>best</td><td class='mono'>O((V+E)·log(V))</td><td class='mono'>O(V·E)</td><td class='win win-A'>Dijkstra (binary heap)</td><td class='mono dim'>A/B → 0 (≈ n^0.94)</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>average</td><td class='mono'>O((V+E)·log(V))</td><td class='mono'>O(V·E)</td><td class='win win-A'>Dijkstra (binary heap)</td><td class='mono dim'>A/B → 0 (≈ n^0.94)</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>worst</td><td class='mono'>O((V+E)·log(V))</td><td class='mono'>O(V·E)</td><td class='win win-A'>Dijkstra (binary heap)</td><td class='mono dim'>A/B → 0 (≈ n^0.94)</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>worst</td><td class='mono'>O(V)</td><td class='mono'>O(V)</td><td class='win win-tie'>tie</td><td class='mono dim'>equal</td><td class='mono dim'>—</td></tr>
+</table></div>
+
+<h2>Operation-count growth — time/average case</h2>
+<div class="card">
+<div class="legend"><span><i class="sw" style="background:var(--a)"></i>Dijkstra (binary heap) · O((V+E)·log(V))</span>
+<span><i class="sw" style="background:var(--b)"></i>Bellman-Ford · O(V·E)</span></div>
+<svg viewBox="0 0 940 300" width="100%" style="margin-top:10px" role="img"
+ aria-label="log-log growth chart">
+<line x1="62" y1="14.0" x2="924" y2="14.0" stroke="#262b39"/><text x="54" y="18.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e19</text><line x1="62" y1="64.4" x2="924" y2="64.4" stroke="#262b39"/><text x="54" y="68.4" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e16</text><line x1="62" y1="114.8" x2="924" y2="114.8" stroke="#262b39"/><text x="54" y="118.8" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e12</text><line x1="62" y1="165.2" x2="924" y2="165.2" stroke="#262b39"/><text x="54" y="169.2" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e8</text><line x1="62" y1="215.6" x2="924" y2="215.6" stroke="#262b39"/><text x="54" y="219.6" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e4</text><line x1="62" y1="266.0" x2="924" y2="266.0" stroke="#262b39"/><text x="54" y="270.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e1</text>
+<path d="M62.0,248.6 L169.8,231.1 L277.5,215.4 L385.2,200.3 L493.0,185.5 L600.8,171.0 L708.5,156.7 L924.0,128.4" fill="none" stroke="#2f6fed" stroke-width="2.4"/>
+<path d="M62.0,246.2 L169.8,219.4 L277.5,192.5 L385.2,165.7 L493.0,138.8 L600.8,112.0 L708.5,85.1 L924.0,31.4" fill="none" stroke="#c026d3" stroke-width="2.4" stroke-dasharray="6 4"/>
+<circle cx="62.0" cy="248.6" r="3" fill="#2f6fed"/><circle cx="62.0" cy="246.2" r="3" fill="#c026d3"/><circle cx="169.8" cy="231.1" r="3" fill="#2f6fed"/><circle cx="169.8" cy="219.4" r="3" fill="#c026d3"/><circle cx="277.5" cy="215.4" r="3" fill="#2f6fed"/><circle cx="277.5" cy="192.5" r="3" fill="#c026d3"/><circle cx="385.2" cy="200.3" r="3" fill="#2f6fed"/><circle cx="385.2" cy="165.7" r="3" fill="#c026d3"/><circle cx="493.0" cy="185.5" r="3" fill="#2f6fed"/><circle cx="493.0" cy="138.8" r="3" fill="#c026d3"/><circle cx="600.8" cy="171.0" r="3" fill="#2f6fed"/><circle cx="600.8" cy="112.0" r="3" fill="#c026d3"/><circle cx="708.5" cy="156.7" r="3" fill="#2f6fed"/><circle cx="708.5" cy="85.1" r="3" fill="#c026d3"/><circle cx="924.0" cy="128.4" r="3" fill="#2f6fed"/><circle cx="924.0" cy="31.4" r="3" fill="#c026d3"/><text x="62.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10</text><text x="169.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100</text><text x="277.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000</text><text x="385.2" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000</text><text x="493.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100,000</text><text x="600.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000</text><text x="708.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000,000</text><text x="924.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000,000</text>
+<line x1="62" y1="266" x2="924" y2="266" stroke="#3a4054"/>
+<line x1="62" y1="14" x2="62" y2="266" stroke="#3a4054"/>
+</svg>
+<table style="margin-top:14px">
+<tr><th>n</th><th>Dijkstra (binary heap)</th><th>Bellman-Ford</th><th>A ÷ B</th><th>cheaper</th></tr>
+<tr><td class='mono dim'>10</td><td><div class='barwrap'><div class='bar a' style='width:10.1%'></div><span class='mono'>66.4</span></div></td><td><div class='barwrap'><div class='bar b' style='width:11.1%'></div><span class='mono'>100</span></div></td><td class='mono'>0.664</td><td class='win'>A</td></tr><tr><td class='mono dim'>100</td><td><div class='barwrap'><div class='bar a' style='width:17.4%'></div><span class='mono'>1.33e+03</span></div></td><td><div class='barwrap'><div class='bar b' style='width:22.2%'></div><span class='mono'>1e+04</span></div></td><td class='mono'>0.133</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000</td><td><div class='barwrap'><div class='bar a' style='width:23.9%'></div><span class='mono'>1.99e+04</span></div></td><td><div class='barwrap'><div class='bar b' style='width:33.3%'></div><span class='mono'>1e+06</span></div></td><td class='mono'>0.0199</td><td class='win'>A</td></tr><tr><td class='mono dim'>10,000</td><td><div class='barwrap'><div class='bar a' style='width:30.1%'></div><span class='mono'>2.66e+05</span></div></td><td><div class='barwrap'><div class='bar b' style='width:44.4%'></div><span class='mono'>1e+08</span></div></td><td class='mono'>0.00266</td><td class='win'>A</td></tr><tr><td class='mono dim'>100,000</td><td><div class='barwrap'><div class='bar a' style='width:36.2%'></div><span class='mono'>3.32e+06</span></div></td><td><div class='barwrap'><div class='bar b' style='width:55.6%'></div><span class='mono'>1e+10</span></div></td><td class='mono'>0.000332</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000,000</td><td><div class='barwrap'><div class='bar a' style='width:42.2%'></div><span class='mono'>3.99e+07</span></div></td><td><div class='barwrap'><div class='bar b' style='width:66.7%'></div><span class='mono'>1.00e+12</span></div></td><td class='mono'>3.99e-05</td><td class='win'>A</td></tr><tr><td class='mono dim'>10,000,000</td><td><div class='barwrap'><div class='bar a' style='width:48.2%'></div><span class='mono'>4.65e+08</span></div></td><td><div class='barwrap'><div class='bar b' style='width:77.8%'></div><span class='mono'>1.00e+14</span></div></td><td class='mono'>4.65e-06</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000,000,000</td><td><div class='barwrap'><div class='bar a' style='width:59.9%'></div><span class='mono'>5.98e+10</span></div></td><td><div class='barwrap'><div class='bar b' style='width:100.0%'></div><span class='mono'>1.00e+18</span></div></td><td class='mono'>5.98e-08</td><td class='win'>A</td></tr>
+</table>
+<p class="dim" style="font-size:12.5px;margin-top:10px">Bar lengths are log-scaled.
+Values are abstract operation counts from the declared growth functions, not seconds.</p>
+</div>
+
+<h2>Reasoning</h2><div class="card"><ul><li>time/best: Dijkstra (binary heap) O((V+E)·log(V)) vs Bellman-Ford O(V·E) → Dijkstra (binary heap) is asymptotically better. the cost ratio grows like n^0.94, so the advantage widens without bound as n grows.</li><li>time/average: Dijkstra (binary heap) O((V+E)·log(V)) vs Bellman-Ford O(V·E) → Dijkstra (binary heap) is asymptotically better. the cost ratio grows like n^0.94, so the advantage widens without bound as n grows.</li><li>time/worst: Dijkstra (binary heap) O((V+E)·log(V)) vs Bellman-Ford O(V·E) → Dijkstra (binary heap) is asymptotically better. the cost ratio grows like n^0.94, so the advantage widens without bound as n grows.</li><li>space/worst: Dijkstra (binary heap) O(V) vs Bellman-Ford O(V) → asymptotically equivalent (same growth class).</li></ul></div>
+
+<h2>Caveats &amp; constant factors</h2><ul><li><b>Dijkstra (binary heap):</b> The standard choice. Cannot handle negative edge weights.</li><li><b>Bellman-Ford:</b> O(VE) — much slower than Dijkstra, but the only simple SSSP algorithm that handles negative edges and detects negative cycles.</li></ul>
+
+<footer>Generated by <b>algo-compare</b>. Asymptotic notation hides constant factors,
+memory-hierarchy effects and allocation cost — confirm with an empirical benchmark before
+deciding.</footer>
+</div></body></html>

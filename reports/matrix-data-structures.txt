@@ -1,0 +1,21 @@
+Data structure operations by average-case cost
+
+Data structure operations by average-case cost
+algorithm                  time/average  space/average
+-------------------------  ------------  -------------
+Dynamic Array (amortised)  1*            n*           
+Singly Linked List         n             n*           
+Doubly Linked List         n             n*           
+Binary Heap                logn          n*           
+AVL Tree                   logn          n*           
+Red-Black Tree             logn          n*           
+Splay Tree                 logn          n*           
+B-Tree / B+ Tree           logn          n*           
+Skip List                  logn          n*           
+Trie (prefix tree)         L             n·L·sigma    
+Segment Tree               logn          n*           
+Fenwick Tree (BIT)         logn          n*           
+Sparse Table               1*            nlogn        
+SQRT Decomposition         √n            n*           
+Hash Map (std / dict)      1*            n*           
+* = best asymptotic bound in that column

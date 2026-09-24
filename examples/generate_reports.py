@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Regenerate the sample reports in `reports/` (run from the project root).
+
+    python3 examples/generate_reports.py
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+
+from algocomp import compare, registry                      # noqa: E402
+from algocomp.matrix import render_matrix                   # noqa: E402
+from algocomp.reports import render_html, render_markdown   # noqa: E402
+
+OUT = os.path.join(ROOT, "reports")
+
+#: (filename, algorithm A, algorithm B, human title)
+SHOWCASE = [
+    ("sorting-merge-vs-quick", "merge_sort", "quick_sort",
+     "Same Big-O, different everything else"),
+    ("sorting-bubble-vs-timsort", "bubble_sort", "timsort",
+     "Quadratic vs linearithmic — the classic blow-up"),
+    ("search-linear-vs-binary", "linear_search", "binary_search",
+     "O(n) vs O(log n): scanning vs halving"),
+    ("search-jump-vs-binary", "jump_search", "binary_search",
+     "A real crossover: O(√n) beats O(log n) for tiny inputs"),
+    ("graph-dijkstra-vs-bellman", "dijkstra_binary_heap", "bellman_ford",
+     "O((V+E) log V) vs O(VE) for shortest paths"),
+    ("dp-fib-naive-vs-memo", "fibonacci_naive_recursion",
+     "fibonacci_memoisation_bottom_up",
+     "Exponential recursion vs linear memoisation"),
+    ("sorting-counting-vs-merge", "counting_sort", "merge_sort",
+     "Non-comparison sort vs comparison sort"),
+    ("crypto-argon2-vs-pbkdf2", "argon2id", "pbkdf2",
+     "Deliberately slow: password hashing trade-offs"),
+]
+
+
+def main() -> int:
+    os.makedirs(OUT, exist_ok=True)
+    reg = registry()
+    index_rows = []
+
+    for slug, key_a, key_b, title in SHOWCASE:
+        a, b = reg.get(key_a), reg.get(key_b)
+        verdict = compare(a, b)
+        html_path = os.path.join(OUT, f"{slug}.html")
+        md_path = os.path.join(OUT, f"{slug}.md")
+        with open(html_path, "w", encoding="utf-8") as fh:
+            fh.write(render_html(verdict))
+        with open(md_path, "w", encoding="utf-8") as fh:
+            fh.write(render_markdown(verdict))
+        winner, _ = verdict.overall_winner
+        winner_name = "tie" if winner is None else reg.get(winner).name
+        index_rows.append((title, a.name, b.name, winner_name, slug))
+        print(f"  wrote reports/{slug}.html + .md   (winner: {winner_name})")
+
+    # complexity matrices
+    for slug, title, kwargs in [
+        ("matrix-sorting", "Sorting algorithms by average-case cost",
+         dict(category="sorting")),
+        ("matrix-graph", "Graph algorithms by average-case cost",
+         dict(category="graph")),
+        ("matrix-data-structures", "Data structure operations by average-case cost",
+         dict(category="data structure operations")),
+        ("matrix-dynamic-programming", "Dynamic programming by average-case cost",
+         dict(category="dynamic programming")),
+    ]:
+        algos = reg.filter(**kwargs)
+        text = render_matrix(algos, dimension="time", cases=("average",),
+                             include_space=True,
+                             title=title, width=140, color=False)
+        with open(os.path.join(OUT, f"{slug}.txt"), "w", encoding="utf-8") as fh:
+            fh.write(title + "\n\n" + text + "\n")
+        print(f"  wrote reports/{slug}.txt   ({len(algos)} algorithms)")
+
+    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
+        rows = "\n".join(
+            f'<tr><td><a href="{slug}.html">{title}</a></td>'
+            f'<td class="mono">{a}</td><td class="mono">{b}</td>'
+            f'<td class="win">{w}</td></tr>'
+            for title, a, b, w, slug in index_rows
+        )
+        fh.write(f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>algo-compare — sample reports</title><style>
+:root {{ --bg:#0f1117; --fg:#e6e8ef; --muted:#8b90a3; --card:#171a23; --line:#262b39; }}
+body {{ margin:0; padding:40px 20px; background:var(--bg); color:var(--fg);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }}
+.wrap {{ max-width:900px; margin:0 auto; }}
+h1 {{ font-size:24px; margin:0 0 6px; }}
+p.sub {{ color:var(--muted); margin:0 0 26px; }}
+table {{ width:100%; border-collapse:collapse; background:var(--card);
+  border:1px solid var(--line); border-radius:12px; overflow:hidden; }}
+th,td {{ padding:11px 14px; border-bottom:1px solid var(--line); text-align:left; }}
+th {{ font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); }}
+tr:last-child td {{ border-bottom:none; }}
+a {{ color:#7fb0ff; text-decoration:none; }} a:hover {{ text-decoration:underline; }}
+.mono {{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; color:#c8cbd8; }}
+.win {{ color:#7fd6a2; font-weight:600; }}
+</style></head><body><div class="wrap">
+<h1>algo-compare — sample comparison reports</h1>
+<p class="sub">Generated by <span class="mono">python3 examples/generate_reports.py</span>.
+Each report is a self-contained HTML file: theoretical comparison, case-by-case verdict,
+growth table with a hand-drawn SVG chart, crossovers and caveats.</p>
+<table><tr><th>Scenario</th><th>Algorithm A</th><th>Algorithm B</th><th>Winner</th></tr>
+{rows}</table>
+</div></body></html>""")
+    print(f"  wrote reports/index.html")
+    print(f"\nDone — {len(SHOWCASE)} comparisons + 4 matrices in {OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

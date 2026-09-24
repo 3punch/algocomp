@@ -1,0 +1,69 @@
+# Example custom-algorithm definitions.
+#
+#   algo-compare --definitions examples/my_algorithms.defs list --category custom
+#   algo-compare --definitions examples/my_algorithms.defs compare hybrid_sort timsort
+#
+# Recognised keys:
+#   name, category, task
+#   time_worst, time_average, time_best
+#   space_worst, space_average, space_best
+#   stable, in_place, notes
+# Any other key is kept as free-form metadata.
+#
+# Expressions use `n` for the input size; log2() is the CS default log.
+# Other allowed variables: m, k, V, E, W, d, b.
+
+[hybrid_sort]
+name = Hybrid Sort (insertion + merge)
+category = custom
+task = sort a list of comparable items
+time_worst = n*log2(n)
+time_average = n*log2(n)
+time_best = n
+space_worst = n
+space_average = n
+stable = true
+in_place = false
+notes = Insertion sort below 32 elements, merge sort above. This is essentially Timsort's strategy.
+
+[blocked_quick_sort]
+name = Blocked Quick Sort
+category = custom
+task = sort a list of comparable items
+time_worst = n*log2(n)
+time_average = n*log2(n)
+time_best = n*log2(n)
+space_worst = log2(n)
+stable = false
+in_place = true
+notes = Median-of-three pivot plus an explicit depth limit that falls back to heap sort.
+
+[blockchain_ledger_scan]
+name = Ledger Scan (brute force)
+category = custom
+task = find a record in an append-only ledger
+time_worst = n
+time_average = n
+time_best = 1
+space_worst = 1
+notes = Sequential scan of every block; no index.
+
+[blockchain_ledger_index]
+name = Ledger Scan (merkle index)
+category = custom
+task = find a record in an append-only ledger
+time_worst = log2(n)
+time_average = log2(n)
+time_best = log2(n)
+space_worst = n
+notes = Merkle-tree index: O(log n) lookups at the cost of O(n) extra storage.
+
+[retry_loop]
+name = Exponential Backoff Retry Loop
+category = custom
+task = retry an operation until it succeeds
+time_worst = 2**n
+time_average = n
+time_best = 1
+space_worst = 1
+notes = Worst case is the total backoff ceiling; average assumes a constant per-attempt success probability.

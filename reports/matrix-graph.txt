@@ -1,0 +1,44 @@
+Graph algorithms by average-case cost
+
+Graph algorithms by average-case cost
+algorithm                                      time/average   space/average
+---------------------------------------------  -------------  -------------
+BFS                                            V+E            V            
+DFS                                            V+E            V            
+Dijkstra (binary heap)                         (V+E)·log(V)   V            
+Dijkstra (Fibonacci heap)                      E+V·log(V)     V            
+Bellman-Ford                                   V·E            V            
+SPFA (queue-based Bellman-Ford)                E              V            
+Floyd-Warshall                                 V^3            V^2          
+Johnson's Algorithm                            V·E·log(V)     V^2          
+A* Search                                      n              n            
+Bidirectional Dijkstra                         (V+E)·log(V)   V            
+Kruskal (union-find)                           E·log(E)       V+E          
+Prim (binary heap)                             (V+E)·log(V)   V+E          
+Boruvka                                        E·log(V)       V+E          
+Topological Sort (Kahn)                        V+E            V            
+Topological Sort (DFS)                         V+E            V            
+Tarjan SCC                                     V+E            V            
+Kosaraju SCC                                   V+E            V+E          
+Bridges & Articulation Points                  V+E            V            
+Bipartite Check (2-colouring)                  V+E            V            
+Hierholzer (Eulerian path)                     V+E            V+E          
+Hamiltonian Path (backtracking)                2^n            n            
+Held-Karp (TSP exact DP)                       2^n·n^2        2^n·n        
+Edmonds-Karp (max flow)                        V·E^2          V+E          
+Dinic (max flow)                               V^2·E          V+E          
+Push-Relabel (max flow)                        V^2·sqrt(E)    V+E          
+Hungarian Algorithm                            V^3            V^2          
+Hopcroft-Karp                                  E·sqrt(V)      V            
+Union-Find (path compression + union by rank)  1              n            
+SHA-256                                        n              1*           
+HMAC                                           n              1*           
+AES Encryption (per block)                     n              1*           
+RSA (modular exponentiation)                   k^3            k            
+Diffie-Hellman Key Exchange                    k^3            k            
+Elliptic Curve Scalar Multiplication           k^2            k            
+PBKDF2                                         c·n            n            
+Argon2id                                       c·m            m            
+Open Addressing Hash Table (linear probing)    1/(1-a)^2*     n            
+Separate Chaining Hash Table                   1+a            n+a          
+* = best asymptotic bound in that column

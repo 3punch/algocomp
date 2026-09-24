@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "algocomp"
+version = "1.0.0"
+description = "Theoretical complexity comparison framework: pit two algorithms that solve the same task against each other."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["algorithms", "big-o", "complexity", "benchmark", "education"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Topic :: Education",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = []          # zero required dependencies
+
+[project.optional-dependencies]
+pretty = ["rich>=13"]      # nicer terminal tables (optional)
+dev = ["rich>=13"]
+
+[project.scripts]
+algo-compare = "algocomp.cli:main"
+
+[tool.setuptools]
+packages = ["algocomp"]
+
+[tool.setuptools.package-data]
+algocomp = ["py.typed"]

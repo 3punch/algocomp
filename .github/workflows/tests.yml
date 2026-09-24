@@ -1,0 +1,68 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install rich (optional pretty-printing dependency)
+        run: python -m pip install --upgrade pip rich
+
+      - name: Run the test suite
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Smoke-test the CLI (no dependencies needed)
+        run: |
+          python algo-compare compare merge_sort quick_sort --no-chart
+          python algo-compare compare bubble_sort timsort --format json > /dev/null
+          python algo-compare compare dijkstra_binary_heap bellman_ford --format markdown --no-chart > /dev/null
+          python algo-compare list --category sorting
+          python algo-compare matrix --category graph --out /tmp/m.txt
+          python algo-compare suggest --limit 3
+          python algo-compare categories
+          python algo-compare benchmarks
+
+      - name: Verify every report format renders for a sample of pairs
+        run: |
+          python - <<'PY'
+          from algocomp import registry, compare
+          from algocomp.reports import render_html, render_json, render_markdown
+          reg = registry()
+          for a, b in [("merge_sort", "quick_sort"), ("fibonacci_naive_recursion",
+                        "fibonacci_memoisation_bottom_up")]:
+              v = compare(reg.get(a), reg.get(b))
+              for fn in (render_html, render_json, render_markdown):
+                  assert fn(v)
+          print("all renderers OK")
+          PY
+
+      - name: Check the catalogue is well formed
+        run: |
+          python - <<'PY'
+          from algocomp import registry
+          reg = registry()
+          assert len(reg) >= 200, len(reg)
+          for algo in reg.all():
+              assert algo.task and algo.category
+              algo.time.worst.value(64)
+              if algo.space:
+                  algo.space.worst.value(64)
+          print(f"catalogue OK: {len(reg)} algorithms")
+          PY

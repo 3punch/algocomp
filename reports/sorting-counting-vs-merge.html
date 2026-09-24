@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Counting Sort vs Merge Sort — complexity comparison</title>
+<style>
+:root { --a:#2f6fed; --b:#c026d3; --bg:#0f1117; --fg:#e6e8ef; --muted:#8b90a3;
+        --card:#171a23; --line:#262b39; --green:#2ecc71; --yellow:#f1c40f; }
+* { box-sizing:border-box; }
+body { margin:0; padding:32px 20px 64px; background:var(--bg); color:var(--fg);
+       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.wrap { max-width:1000px; margin:0 auto; }
+h1 { font-size:26px; margin:0 0 4px; letter-spacing:-.02em; }
+h2 { font-size:15px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted);
+     margin:36px 0 12px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+.sub { color:var(--muted); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+        padding:18px 20px; margin-bottom:16px; }
+.conclusion { font-size:17px; line-height:1.65; }
+.badge { display:inline-block; padding:3px 11px; border-radius:999px; font-size:12.5px;
+         font-weight:600; background:#1f2534; border:1px solid var(--line); margin-top:10px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.dim { color:var(--muted); }
+.a-col { color:#9dbcff; } .b-col { color:#f0a6f7; }
+.win { font-weight:600; } .win-A { color:#7fd6a2; } .win-B { color:#e79bf0; } .win-tie { color:var(--yellow); }
+ul { padding-left:20px; } li { margin:5px 0; }
+.warn { border-left:3px solid var(--yellow); background:#20202b; }
+.barwrap { position:relative; background:#10131b; border-radius:4px; height:22px; min-width:160px; }
+.bar { position:absolute; left:0; top:0; bottom:0; border-radius:4px; opacity:.55; }
+.bar.a { background:var(--a); } .bar.b { background:var(--b); }
+.barwrap span { position:relative; z-index:1; padding-left:8px; font-size:12.5px; line-height:22px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; margin-right:16px; font-size:13px; }
+.sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
+footer { color:var(--muted); font-size:12.5px; margin-top:32px; border-top:1px solid var(--line); padding-top:14px; }
+</style></head><body><div class="wrap">
+<h1>Counting Sort <span class="dim">vs</span> Merge Sort</h1>
+<p class="sub">Task: sort integers from a bounded range &nbsp;·&nbsp; family: sorting
+ &nbsp;·&nbsp; theoretical (asymptotic) comparison</p>
+
+<div class="card warn"><b>Warnings</b><ul><li>Different tasks: Counting Sort solves &quot;sort integers from a bounded range&quot; while Merge Sort solves &quot;sort a list of comparable items&quot;. The comparison below is only meaningful if you consider these tasks equivalent.</li><li>space/best is not declared for Counting Sort; its worst-case bound (O(n+k)) is used as a conservative stand-in.</li><li>space/average is not declared for Counting Sort; its worst-case bound (O(n+k)) is used as a conservative stand-in.</li><li>The two bounds use different parameters (Counting Sort: [&#x27;k&#x27;, &#x27;n&#x27;], Merge Sort: [&#x27;n&#x27;]). Numeric samples below assume every non-`n` parameter equals n, so read them as shape comparisons, not exact values.</li></ul></div>
+
+<div class="card">
+  <div class="conclusion">These two do not solve the same task (Counting Sort: sort integers from a bounded range; Merge Sort: sort a list of comparable items), so read this as a reference comparison rather than a like-for-like verdict. For average-case time, Counting Sort (O(n+k)) beats Merge Sort (O(n log n)). The advantage only materialises above n ≈ 4: for smaller inputs the theoretically worse algorithm can still win on constant factors. Memory favours Merge Sort (O(n+k) vs O(n)).</div>
+  <div class="badge">Overall winner: Counting Sort — weighted score A=5.5 vs B=3</div>
+</div>
+
+<h2>Complexity profiles</h2>
+<div class="card"><table>
+<tr><th></th><th class="a-col">Counting Sort</th><th class="b-col">Merge Sort</th></tr>
+<tr><th>category</th><td>sorting</td><td>sorting</td></tr><tr><th>task</th><td>sort integers from a bounded range</td><td>sort a list of comparable items</td></tr><tr><th>time best</th><td>O(n+k)</td><td>O(n log n)</td></tr><tr><th>time average</th><td>O(n+k)</td><td>O(n log n)</td></tr><tr><th>time worst</th><td>O(n+k)</td><td>O(n log n)</td></tr><tr><th>space worst</th><td>O(n+k)</td><td>O(n)</td></tr><tr><th>stable</th><td>yes</td><td>yes</td></tr><tr><th>in place</th><td>no</td><td>no</td></tr><tr><th>space best</th><td>—</td><td>O(n)</td></tr><tr><th>space average</th><td>—</td><td>O(n)</td></tr>
+</table></div>
+
+<h2>Case-by-case verdict</h2>
+<div class="card"><table>
+<tr><th>dimension</th><th>case</th><th>Counting Sort</th><th>Merge Sort</th>
+<th>winner</th><th>A÷B as n&rarr;&infin;</th><th>crossover n</th></tr>
+<tr><td>time</td><td>best</td><td class='mono'>O(n+k)</td><td class='mono'>O(n log n)</td><td class='win win-A'>Counting Sort</td><td class='mono dim'>A/B → 0 (≈ n^0.06)</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>average</td><td class='mono'>O(n+k)</td><td class='mono'>O(n log n)</td><td class='win win-A'>Counting Sort</td><td class='mono dim'>A/B → 0 (≈ n^0.06)</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>worst</td><td class='mono'>O(n+k)</td><td class='mono'>O(n log n)</td><td class='win win-A'>Counting Sort</td><td class='mono dim'>A/B → 0 (≈ n^0.06)</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>best</td><td class='mono'>O(n+k)</td><td class='mono'>O(n)</td><td class='win win-B'>Merge Sort</td><td class='mono dim'>→ 2×</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>average</td><td class='mono'>O(n+k)</td><td class='mono'>O(n)</td><td class='win win-B'>Merge Sort</td><td class='mono dim'>→ 2×</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>worst</td><td class='mono'>O(n+k)</td><td class='mono'>O(n)</td><td class='win win-B'>Merge Sort</td><td class='mono dim'>→ 2×</td><td class='mono dim'>—</td></tr>
+</table></div>
+
+<h2>Operation-count growth — time/average case</h2>
+<div class="card">
+<div class="legend"><span><i class="sw" style="background:var(--a)"></i>Counting Sort · O(n+k)</span>
+<span><i class="sw" style="background:var(--b)"></i>Merge Sort · O(n log n)</span></div>
+<svg viewBox="0 0 940 300" width="100%" style="margin-top:10px" role="img"
+ aria-label="log-log growth chart">
+<line x1="62" y1="14.0" x2="924" y2="14.0" stroke="#262b39"/><text x="54" y="18.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e11</text><line x1="62" y1="64.4" x2="924" y2="64.4" stroke="#262b39"/><text x="54" y="68.4" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e9</text><line x1="62" y1="114.8" x2="924" y2="114.8" stroke="#262b39"/><text x="54" y="118.8" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e7</text><line x1="62" y1="165.2" x2="924" y2="165.2" stroke="#262b39"/><text x="54" y="169.2" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e5</text><line x1="62" y1="215.6" x2="924" y2="215.6" stroke="#262b39"/><text x="54" y="219.6" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e3</text><line x1="62" y1="266.0" x2="924" y2="266.0" stroke="#262b39"/><text x="54" y="270.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e1</text>
+<path d="M62.0,248.6 L169.8,224.9 L277.5,201.3 L385.2,177.6 L493.0,153.9 L600.8,130.2 L708.5,106.5 L924.0,59.2" fill="none" stroke="#2f6fed" stroke-width="2.4"/>
+<path d="M62.0,243.4 L169.8,212.6 L277.5,184.7 L385.2,158.1 L493.0,132.1 L600.8,106.6 L708.5,81.3 L924.0,31.4" fill="none" stroke="#c026d3" stroke-width="2.4" stroke-dasharray="6 4"/>
+<circle cx="62.0" cy="248.6" r="3" fill="#2f6fed"/><circle cx="62.0" cy="243.4" r="3" fill="#c026d3"/><circle cx="169.8" cy="224.9" r="3" fill="#2f6fed"/><circle cx="169.8" cy="212.6" r="3" fill="#c026d3"/><circle cx="277.5" cy="201.3" r="3" fill="#2f6fed"/><circle cx="277.5" cy="184.7" r="3" fill="#c026d3"/><circle cx="385.2" cy="177.6" r="3" fill="#2f6fed"/><circle cx="385.2" cy="158.1" r="3" fill="#c026d3"/><circle cx="493.0" cy="153.9" r="3" fill="#2f6fed"/><circle cx="493.0" cy="132.1" r="3" fill="#c026d3"/><circle cx="600.8" cy="130.2" r="3" fill="#2f6fed"/><circle cx="600.8" cy="106.6" r="3" fill="#c026d3"/><circle cx="708.5" cy="106.5" r="3" fill="#2f6fed"/><circle cx="708.5" cy="81.3" r="3" fill="#c026d3"/><circle cx="924.0" cy="59.2" r="3" fill="#2f6fed"/><circle cx="924.0" cy="31.4" r="3" fill="#c026d3"/><text x="62.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10</text><text x="169.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100</text><text x="277.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000</text><text x="385.2" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000</text><text x="493.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100,000</text><text x="600.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000</text><text x="708.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000,000</text><text x="924.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000,000</text>
+<line x1="62" y1="266" x2="924" y2="266" stroke="#3a4054"/>
+<line x1="62" y1="14" x2="62" y2="266" stroke="#3a4054"/>
+</svg>
+<table style="margin-top:14px">
+<tr><th>n</th><th>Counting Sort</th><th>Merge Sort</th><th>A ÷ B</th><th>cheaper</th></tr>
+<tr><td class='mono dim'>10</td><td><div class='barwrap'><div class='bar a' style='width:12.4%'></div><span class='mono'>20</span></div></td><td><div class='barwrap'><div class='bar b' style='width:14.5%'></div><span class='mono'>33.2</span></div></td><td class='mono'>0.602</td><td class='win'>A</td></tr><tr><td class='mono dim'>100</td><td><div class='barwrap'><div class='bar a' style='width:22.0%'></div><span class='mono'>200</span></div></td><td><div class='barwrap'><div class='bar b' style='width:26.9%'></div><span class='mono'>664</span></div></td><td class='mono'>0.301</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000</td><td><div class='barwrap'><div class='bar a' style='width:31.5%'></div><span class='mono'>2e+03</span></div></td><td><div class='barwrap'><div class='bar b' style='width:38.2%'></div><span class='mono'>9.97e+03</span></div></td><td class='mono'>0.201</td><td class='win'>A</td></tr><tr><td class='mono dim'>10,000</td><td><div class='barwrap'><div class='bar a' style='width:41.1%'></div><span class='mono'>2e+04</span></div></td><td><div class='barwrap'><div class='bar b' style='width:48.9%'></div><span class='mono'>1.33e+05</span></div></td><td class='mono'>0.151</td><td class='win'>A</td></tr><tr><td class='mono dim'>100,000</td><td><div class='barwrap'><div class='bar a' style='width:50.6%'></div><span class='mono'>2e+05</span></div></td><td><div class='barwrap'><div class='bar b' style='width:59.4%'></div><span class='mono'>1.66e+06</span></div></td><td class='mono'>0.12</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000,000</td><td><div class='barwrap'><div class='bar a' style='width:60.1%'></div><span class='mono'>2e+06</span></div></td><td><div class='barwrap'><div class='bar b' style='width:69.7%'></div><span class='mono'>1.99e+07</span></div></td><td class='mono'>0.1</td><td class='win'>A</td></tr><tr><td class='mono dim'>10,000,000</td><td><div class='barwrap'><div class='bar a' style='width:69.7%'></div><span class='mono'>2e+07</span></div></td><td><div class='barwrap'><div class='bar b' style='width:79.9%'></div><span class='mono'>2.33e+08</span></div></td><td class='mono'>0.086</td><td class='win'>A</td></tr><tr><td class='mono dim'>1,000,000,000</td><td><div class='barwrap'><div class='bar a' style='width:88.8%'></div><span class='mono'>2e+09</span></div></td><td><div class='barwrap'><div class='bar b' style='width:100.0%'></div><span class='mono'>2.99e+10</span></div></td><td class='mono'>0.0669</td><td class='win'>A</td></tr>
+</table>
+<p class="dim" style="font-size:12.5px;margin-top:10px">Bar lengths are log-scaled.
+Values are abstract operation counts from the declared growth functions, not seconds.</p>
+</div>
+
+<h2>Reasoning</h2><div class="card"><ul><li>time/best: Counting Sort O(n+k) vs Merge Sort O(n log n) → Counting Sort is asymptotically better. the curves touch only near n ≈ 4 (too small to matter), so Counting Sort is effectively ahead everywhere.</li><li>time/average: Counting Sort O(n+k) vs Merge Sort O(n log n) → Counting Sort is asymptotically better. the curves touch only near n ≈ 4 (too small to matter), so Counting Sort is effectively ahead everywhere.</li><li>time/worst: Counting Sort O(n+k) vs Merge Sort O(n log n) → Counting Sort is asymptotically better. the curves touch only near n ≈ 4 (too small to matter), so Counting Sort is effectively ahead everywhere.</li><li>space/best: Counting Sort O(n+k) vs Merge Sort O(n) → Merge Sort is asymptotically better. same growth class — a constant factor of about 2 separates them, which Big-O hides.</li><li>space/average: Counting Sort O(n+k) vs Merge Sort O(n) → Merge Sort is asymptotically better. same growth class — a constant factor of about 2 separates them, which Big-O hides.</li><li>space/worst: Counting Sort O(n+k) vs Merge Sort O(n) → Merge Sort is asymptotically better. same growth class — a constant factor of about 2 separates them, which Big-O hides.</li></ul></div>
+
+<h2>Caveats &amp; constant factors</h2><ul><li><b>Counting Sort:</b> k = size of the value range. Linear only when k = O(n); otherwise the range dominates. Not a comparison sort — bypasses the Ω(n log n) bound.</li><li><b>Merge Sort:</b> Guaranteed O(n log n) in every case; needs O(n) aux memory for arrays (O(log n) on linked lists). Excellent for external / streaming sort.</li></ul>
+
+<footer>Generated by <b>algo-compare</b>. Asymptotic notation hides constant factors,
+memory-hierarchy effects and allocation cost — confirm with an empirical benchmark before
+deciding.</footer>
+</div></body></html>

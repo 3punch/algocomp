@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bubble Sort vs Timsort — complexity comparison</title>
+<style>
+:root { --a:#2f6fed; --b:#c026d3; --bg:#0f1117; --fg:#e6e8ef; --muted:#8b90a3;
+        --card:#171a23; --line:#262b39; --green:#2ecc71; --yellow:#f1c40f; }
+* { box-sizing:border-box; }
+body { margin:0; padding:32px 20px 64px; background:var(--bg); color:var(--fg);
+       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.wrap { max-width:1000px; margin:0 auto; }
+h1 { font-size:26px; margin:0 0 4px; letter-spacing:-.02em; }
+h2 { font-size:15px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted);
+     margin:36px 0 12px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+.sub { color:var(--muted); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+        padding:18px 20px; margin-bottom:16px; }
+.conclusion { font-size:17px; line-height:1.65; }
+.badge { display:inline-block; padding:3px 11px; border-radius:999px; font-size:12.5px;
+         font-weight:600; background:#1f2534; border:1px solid var(--line); margin-top:10px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.dim { color:var(--muted); }
+.a-col { color:#9dbcff; } .b-col { color:#f0a6f7; }
+.win { font-weight:600; } .win-A { color:#7fd6a2; } .win-B { color:#e79bf0; } .win-tie { color:var(--yellow); }
+ul { padding-left:20px; } li { margin:5px 0; }
+.warn { border-left:3px solid var(--yellow); background:#20202b; }
+.barwrap { position:relative; background:#10131b; border-radius:4px; height:22px; min-width:160px; }
+.bar { position:absolute; left:0; top:0; bottom:0; border-radius:4px; opacity:.55; }
+.bar.a { background:var(--a); } .bar.b { background:var(--b); }
+.barwrap span { position:relative; z-index:1; padding-left:8px; font-size:12.5px; line-height:22px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; margin-right:16px; font-size:13px; }
+.sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
+footer { color:var(--muted); font-size:12.5px; margin-top:32px; border-top:1px solid var(--line); padding-top:14px; }
+</style></head><body><div class="wrap">
+<h1>Bubble Sort <span class="dim">vs</span> Timsort</h1>
+<p class="sub">Task: sort a list of comparable items &nbsp;·&nbsp; family: sorting
+ &nbsp;·&nbsp; theoretical (asymptotic) comparison</p>
+
+
+
+<div class="card">
+  <div class="conclusion">For average-case time, Timsort (O(n log n)) beats Bubble Sort (O(n^2)). Timsort is better at every input size, not just asymptotically. Memory favours Bubble Sort (O(1) vs O(n)); in-place-ness differs (Bubble Sort: in-place, Timsort: extra memory).</div>
+  <div class="badge">Overall winner: Timsort — weighted score A=1.5 vs B=5</div>
+</div>
+
+<h2>Complexity profiles</h2>
+<div class="card"><table>
+<tr><th></th><th class="a-col">Bubble Sort</th><th class="b-col">Timsort</th></tr>
+<tr><th>category</th><td>sorting</td><td>sorting</td></tr><tr><th>task</th><td>sort a list of comparable items</td><td>sort a list of comparable items</td></tr><tr><th>time best</th><td>O(n)</td><td>O(n)</td></tr><tr><th>time average</th><td>O(n^2)</td><td>O(n log n)</td></tr><tr><th>time worst</th><td>O(n^2)</td><td>O(n log n)</td></tr><tr><th>space worst</th><td>O(1)</td><td>O(n)</td></tr><tr><th>stable</th><td>yes</td><td>yes</td></tr><tr><th>in place</th><td>yes</td><td>no</td></tr><tr><th>input sensitive</th><td>yes — best/average/worst differ</td><td>yes — best/average/worst differ</td></tr>
+</table></div>
+
+<h2>Case-by-case verdict</h2>
+<div class="card"><table>
+<tr><th>dimension</th><th>case</th><th>Bubble Sort</th><th>Timsort</th>
+<th>winner</th><th>A÷B as n&rarr;&infin;</th><th>crossover n</th></tr>
+<tr><td>time</td><td>best</td><td class='mono'>O(n)</td><td class='mono'>O(n)</td><td class='win win-tie'>tie</td><td class='mono dim'>equal</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>average</td><td class='mono'>O(n^2)</td><td class='mono'>O(n log n)</td><td class='win win-B'>Timsort</td><td class='mono dim'>A/B → ∞ (≈ n^0.94)</td><td class='mono dim'>—</td></tr><tr><td>time</td><td>worst</td><td class='mono'>O(n^2)</td><td class='mono'>O(n log n)</td><td class='win win-B'>Timsort</td><td class='mono dim'>A/B → ∞ (≈ n^0.94)</td><td class='mono dim'>—</td></tr><tr><td>space</td><td>worst</td><td class='mono'>O(1)</td><td class='mono'>O(n)</td><td class='win win-A'>Bubble Sort</td><td class='mono dim'>A/B → 0 (≈ n^1.00)</td><td class='mono dim'>—</td></tr>
+</table></div>
+
+<h2>Operation-count growth — time/average case</h2>
+<div class="card">
+<div class="legend"><span><i class="sw" style="background:var(--a)"></i>Bubble Sort · O(n^2)</span>
+<span><i class="sw" style="background:var(--b)"></i>Timsort · O(n log n)</span></div>
+<svg viewBox="0 0 940 300" width="100%" style="margin-top:10px" role="img"
+ aria-label="log-log growth chart">
+<line x1="62" y1="14.0" x2="924" y2="14.0" stroke="#262b39"/><text x="54" y="18.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e19</text><line x1="62" y1="64.4" x2="924" y2="64.4" stroke="#262b39"/><text x="54" y="68.4" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e15</text><line x1="62" y1="114.8" x2="924" y2="114.8" stroke="#262b39"/><text x="54" y="118.8" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e12</text><line x1="62" y1="165.2" x2="924" y2="165.2" stroke="#262b39"/><text x="54" y="169.2" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e8</text><line x1="62" y1="215.6" x2="924" y2="215.6" stroke="#262b39"/><text x="54" y="219.6" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e4</text><line x1="62" y1="266.0" x2="924" y2="266.0" stroke="#262b39"/><text x="54" y="270.0" text-anchor="end" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">1e0</text>
+<path d="M62.0,242.3 L169.8,215.9 L277.5,189.6 L385.2,163.2 L493.0,136.8 L600.8,110.5 L708.5,84.1 L924.0,31.4" fill="none" stroke="#2f6fed" stroke-width="2.4"/>
+<path d="M62.0,248.6 L169.8,231.5 L277.5,216.0 L385.2,201.1 L493.0,186.7 L600.8,172.4 L708.5,158.4 L924.0,130.6" fill="none" stroke="#c026d3" stroke-width="2.4" stroke-dasharray="6 4"/>
+<circle cx="62.0" cy="242.3" r="3" fill="#2f6fed"/><circle cx="62.0" cy="248.6" r="3" fill="#c026d3"/><circle cx="169.8" cy="215.9" r="3" fill="#2f6fed"/><circle cx="169.8" cy="231.5" r="3" fill="#c026d3"/><circle cx="277.5" cy="189.6" r="3" fill="#2f6fed"/><circle cx="277.5" cy="216.0" r="3" fill="#c026d3"/><circle cx="385.2" cy="163.2" r="3" fill="#2f6fed"/><circle cx="385.2" cy="201.1" r="3" fill="#c026d3"/><circle cx="493.0" cy="136.8" r="3" fill="#2f6fed"/><circle cx="493.0" cy="186.7" r="3" fill="#c026d3"/><circle cx="600.8" cy="110.5" r="3" fill="#2f6fed"/><circle cx="600.8" cy="172.4" r="3" fill="#c026d3"/><circle cx="708.5" cy="84.1" r="3" fill="#2f6fed"/><circle cx="708.5" cy="158.4" r="3" fill="#c026d3"/><circle cx="924.0" cy="31.4" r="3" fill="#2f6fed"/><circle cx="924.0" cy="130.6" r="3" fill="#c026d3"/><text x="62.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10</text><text x="169.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100</text><text x="277.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000</text><text x="385.2" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000</text><text x="493.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=100,000</text><text x="600.8" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000</text><text x="708.5" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=10,000,000</text><text x="924.0" y="284.0" text-anchor="middle" fill="#8b90a3" font-size="10" font-family="ui-monospace,monospace">n=1,000,000,000</text>
+<line x1="62" y1="266" x2="924" y2="266" stroke="#3a4054"/>
+<line x1="62" y1="14" x2="62" y2="266" stroke="#3a4054"/>
+</svg>
+<table style="margin-top:14px">
+<tr><th>n</th><th>Bubble Sort</th><th>Timsort</th><th>A ÷ B</th><th>cheaper</th></tr>
+<tr><td class='mono dim'>10</td><td><div class='barwrap'><div class='bar a' style='width:11.1%'></div><span class='mono'>100</span></div></td><td><div class='barwrap'><div class='bar b' style='width:8.5%'></div><span class='mono'>33.2</span></div></td><td class='mono'>3.01</td><td class='win'>B</td></tr><tr><td class='mono dim'>100</td><td><div class='barwrap'><div class='bar a' style='width:22.2%'></div><span class='mono'>1e+04</span></div></td><td><div class='barwrap'><div class='bar b' style='width:15.7%'></div><span class='mono'>664</span></div></td><td class='mono'>15.1</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000</td><td><div class='barwrap'><div class='bar a' style='width:33.3%'></div><span class='mono'>1e+06</span></div></td><td><div class='barwrap'><div class='bar b' style='width:22.2%'></div><span class='mono'>9.97e+03</span></div></td><td class='mono'>100</td><td class='win'>B</td></tr><tr><td class='mono dim'>10,000</td><td><div class='barwrap'><div class='bar a' style='width:44.4%'></div><span class='mono'>1e+08</span></div></td><td><div class='barwrap'><div class='bar b' style='width:28.5%'></div><span class='mono'>1.33e+05</span></div></td><td class='mono'>753</td><td class='win'>B</td></tr><tr><td class='mono dim'>100,000</td><td><div class='barwrap'><div class='bar a' style='width:55.6%'></div><span class='mono'>1e+10</span></div></td><td><div class='barwrap'><div class='bar b' style='width:34.6%'></div><span class='mono'>1.66e+06</span></div></td><td class='mono'>6,021</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000,000</td><td><div class='barwrap'><div class='bar a' style='width:66.7%'></div><span class='mono'>1.00e+12</span></div></td><td><div class='barwrap'><div class='bar b' style='width:40.6%'></div><span class='mono'>1.99e+07</span></div></td><td class='mono'>50,172</td><td class='win'>B</td></tr><tr><td class='mono dim'>10,000,000</td><td><div class='barwrap'><div class='bar a' style='width:77.8%'></div><span class='mono'>1.00e+14</span></div></td><td><div class='barwrap'><div class='bar b' style='width:46.5%'></div><span class='mono'>2.33e+08</span></div></td><td class='mono'>430,043</td><td class='win'>B</td></tr><tr><td class='mono dim'>1,000,000,000</td><td><div class='barwrap'><div class='bar a' style='width:100.0%'></div><span class='mono'>1.00e+18</span></div></td><td><div class='barwrap'><div class='bar b' style='width:58.2%'></div><span class='mono'>2.99e+10</span></div></td><td class='mono'>33,447,777</td><td class='win'>B</td></tr>
+</table>
+<p class="dim" style="font-size:12.5px;margin-top:10px">Bar lengths are log-scaled.
+Values are abstract operation counts from the declared growth functions, not seconds.</p>
+</div>
+
+<h2>Reasoning</h2><div class="card"><ul><li>time/best: Bubble Sort O(n) vs Timsort O(n) → asymptotically equivalent (same growth class).</li><li>time/average: Bubble Sort O(n^2) vs Timsort O(n log n) → Timsort is asymptotically better. the cost ratio grows like n^0.94, so the advantage widens without bound as n grows.</li><li>time/worst: Bubble Sort O(n^2) vs Timsort O(n log n) → Timsort is asymptotically better. the cost ratio grows like n^0.94, so the advantage widens without bound as n grows.</li><li>space/worst: Bubble Sort O(1) vs Timsort O(n) → Bubble Sort is asymptotically better. the cost ratio grows like n^1.00, so the advantage widens without bound as n grows.</li></ul></div>
+
+<h2>Caveats &amp; constant factors</h2><ul><li><b>Bubble Sort:</b> Best case O(n) only with an early-exit flag on an already sorted input. Terrible constant factor and cache behaviour; teaching example only.</li><li><b>Timsort:</b> Adaptive merge sort exploiting existing runs. O(n) on already-sorted input. Default in Python (list.sort) and Java (Arrays.sort for objects).</li></ul>
+
+<footer>Generated by <b>algo-compare</b>. Asymptotic notation hides constant factors,
+memory-hierarchy effects and allocation cost — confirm with an empirical benchmark before
+deciding.</footer>
+</div></body></html>
