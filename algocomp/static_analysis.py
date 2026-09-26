@@ -11,7 +11,9 @@ import ast
 from dataclasses import dataclass, field
 
 #: Canonical expressions the analyzer may emit, slowest-first.
-TIME_EXPRS = ("1", "log2(n)", "n", "n*log2(n)", "n**2", "n**3", "2**n")
+TIME_EXPRS = (
+    "1", "log2(n)", "n", "n*log2(n)", "n**2", "n**2*log2(n)", "n**3", "2**n",
+)
 
 _EXPR_TO_LABEL = {
     "1": "O(1)",
@@ -19,8 +21,20 @@ _EXPR_TO_LABEL = {
     "n": "O(n)",
     "n*log2(n)": "O(n log n)",
     "n**2": "O(n^2)",
+    "n**2*log2(n)": "O(n^2 log n)",
     "n**3": "O(n^3)",
     "2**n": "O(2^n)",
+}
+
+#: When the innermost loop of a nest has a non-constant stride (e.g.
+#: ``range(i*i, n+1, i)``) it does not sweep n elements, so the depth-d product
+#: collapses: n x n -> n log n, n x n x n -> n^2 log n.
+_COLLAPSED_DEPTH = {2: "n*log2(n)", 3: "n**2*log2(n)"}
+
+#: growth classes that a collapsed nest can never exceed
+_COLLAPSE_LABELS = {
+    2: "O(n log n)",
+    3: "O(n^2 log n)",
 }
 
 _EXPR_TO_RANK = {e: i for i, e in enumerate(TIME_EXPRS)}
@@ -63,6 +77,11 @@ def _label(expr: str) -> str:
     return _EXPR_TO_LABEL.get(expr, f"O({expr})")
 
 
+def expr_label(expr: str) -> str:
+    """Canonical Big-O label for one of :data:`TIME_EXPRS` (or any expression)."""
+    return _label(expr)
+
+
 _LINEAR_CALLS = frozenset({
     "sum", "min", "max", "any", "all", "len", "list", "tuple", "set",
     "sorted", "reversed", "enumerate", "map", "filter", "join",
@@ -86,6 +105,13 @@ class _FuncInfo:
     calls_linear: bool = False
     allocates_list: bool = False
     uncertain: list[str] = field(default_factory=list)
+    #: depths whose innermost loop had a non-constant stride
+    variable_stride_depths: list[int] = field(default_factory=list)
+
+    @property
+    def variable_stride_at_max_depth(self) -> bool:
+        """True when the innermost loop is a strided scan, not a full sweep."""
+        return self.max_loop_depth in self.variable_stride_depths
 
 
 class _Visitor(ast.NodeVisitor):
@@ -93,20 +119,45 @@ class _Visitor(ast.NodeVisitor):
         self.func_name = func_name
         self.info = _FuncInfo(name=func_name)
         self._depth = 0
+        #: names bound by the loops we are currently inside of
+        self._loop_vars: list[set[str]] = []
 
     def visit_For(self, node: ast.For) -> None:
+        self._record_strided_loop(node)
         self.info.loop_count += 1
         self._depth += 1
         self.info.max_loop_depth = max(self.info.max_loop_depth, self._depth)
+        self._loop_vars.append(_bound_names(node.target))
         self.generic_visit(node)
+        self._loop_vars.pop()
         self._depth -= 1
 
     def visit_AsyncFor(self, node: ast.AsyncFor) -> None:
         self.info.loop_count += 1
         self._depth += 1
         self.info.max_loop_depth = max(self.info.max_loop_depth, self._depth)
+        self._loop_vars.append(_bound_names(node.target))
         self.generic_visit(node)
+        self._loop_vars.pop()
         self._depth -= 1
+
+    def _record_strided_loop(self, node: ast.For) -> None:
+        """A loop whose stride is not a literal is not a full n-element sweep.
+
+        ``for j in range(i * i, n + 1, i)`` walks about ``n / i`` elements, so
+        summing over the enclosing loop gives a harmonic total (O(n log n))
+        instead of a full n x n product. ``for j in range(i)`` still averages
+        ~n/2 elements, so it correctly stays quadratic.
+        """
+        if _variable_stride(node, self._enclosing_names()):
+            depth = self._depth + 1
+            self.info.variable_stride_depths.append(depth)
+
+    def _enclosing_names(self) -> set[str]:
+        names: set[str] = set()
+        for bound in self._loop_vars:
+            names |= bound
+        return names
 
     def visit_While(self, node: ast.While) -> None:
         self.info.while_count += 1
@@ -118,7 +169,12 @@ class _Visitor(ast.NodeVisitor):
                 "while loop shrinks bound (e.g. //= 2); treated as logarithmic"
             )
             self.info.calls_bisect = True
+        # a while loop has no target, but the names it mutates are its state and
+        # can act as the stride of an inner loop (``while i*i <= n: for j in
+        # range(i*i, n+1, i)``)
+        self._loop_vars.append(_assigned_names(node))
         self.generic_visit(node)
+        self._loop_vars.pop()
         self._depth -= 1
 
     def _visit_comp(self, node: ast.AST) -> None:
@@ -198,7 +254,76 @@ def _call_name(node: ast.Call) -> str:
     return ""
 
 
-def _looks_like_halving_loop(node: ast.While) -> bool:
+def _bound_names(target: ast.AST) -> set[str]:
+    """Names truly bound by an assignment/loop target.
+
+    Handles plain names, tuple/list unpacking and starred targets; a subscript
+    or attribute target binds nothing, so it yields an empty set.
+    """
+    if isinstance(target, ast.Name):
+        return {target.id}
+    if isinstance(target, (ast.Tuple, ast.List)):
+        names: set[str] = set()
+        for elt in target.elts:
+            names |= _bound_names(elt)
+        return names
+    if isinstance(target, ast.Starred):
+        return _bound_names(target.value)
+    return set()
+
+
+def _assigned_names(node: ast.AST) -> set[str]:
+    """Names assigned anywhere inside *node* — a loop's mutable state.
+
+    Used to recognise that a ``while`` loop drives a variable (``i += 1``) even
+    though a ``while`` has no loop target of its own.
+    """
+    names: set[str] = set()
+    for child in ast.walk(node):
+        if isinstance(child, ast.Assign):
+            for target in child.targets:
+                names |= _bound_names(target)
+        elif isinstance(child, ast.AugAssign):
+            names |= _bound_names(child.target)
+        elif isinstance(child, ast.AnnAssign):
+            names |= _bound_names(child.target)
+    return names
+
+
+def _names_in(node: ast.AST) -> set[str]:
+    """Names *read* inside an expression node."""
+    return {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+
+
+def _variable_stride(node: ast.For, enclosing: set[str]) -> bool:
+    """True when a loop's stride is a variable of an *enclosing* loop.
+
+    ``for i in ...: for j in range(i * i, n + 1, i)`` walks about ``n / i``
+    elements, so summing over the enclosing loop gives a harmonic total
+    (O(n log n)) instead of a full n x n product.
+
+    Requiring the stride to come from an enclosing loop keeps the common
+    quadratic patterns quadratic: ``range(n)`` has no step, ``range(i)`` sweeps
+    ~n/2 elements on average, and a stride read from a local constant
+    (``k = 2; range(0, n, k)``) still yields ~n/k elements per pass.
+    """
+    it = node.iter
+    if isinstance(it, ast.Call):
+        if _call_name(it) != "range" or len(it.args) != 3:
+            return False
+        step = it.args[2]
+        return not isinstance(step, ast.Constant) and bool(
+            _names_in(step) & enclosing
+        )
+    if isinstance(it, ast.Subscript) and isinstance(it.slice, ast.Slice):
+        step = it.slice.step
+        if step is None or isinstance(step, ast.Constant):
+            return False
+        return bool(_names_in(step) & enclosing)
+    return False
+
+
+def _looks_like_halving_loop(node: ast.While) -> bool:  # noqa: D401
     src = ast.dump(node)
     has_shrink = any(op in src for op in ("FloorDiv", "RShift", "Div"))
     has_names = any(nm in src for nm in ("mid", "half", "lo", "hi", "low", "high"))
@@ -235,9 +360,23 @@ def _time_for_func(info):
             notes.append("while-loop bound unproven; assumed linear")
         return "n", conf, notes
     if depth == 2:
+        if info.variable_stride_at_max_depth:
+            notes.append(
+                "inner loop has a stride that depends on the enclosing loop "
+                "(e.g. `range(i * i, n + 1, i)`), so this is a harmonic sum, "
+                "not a full n x n product; estimated as O(n log n) - verify "
+                "empirically"
+            )
+            return _COLLAPSED_DEPTH[2], 0.35, notes
         notes.append("doubly nested loops -> O(n^2)")
         return "n**2", 0.8, notes
     if depth == 3:
+        if info.variable_stride_at_max_depth:
+            notes.append(
+                "innermost of three nested loops has a stride that depends on "
+                "an enclosing loop; estimated as O(n^2 log n), not O(n^3)"
+            )
+            return _COLLAPSED_DEPTH[3], 0.35, notes
         notes.append("triply nested loops -> O(n^3)")
         return "n**3", 0.75, notes
     notes.append("nesting depth exceeds cubic model; O(2^n) upper bound")
@@ -266,7 +405,7 @@ def _best_case(worst, info):
         return "1", 0.8
     if info.max_loop_depth == 1 and not info.recursive:
         return "1", 0.4
-    if worst in ("n**2", "n**3"):
+    if worst in ("n**2", "n**2*log2(n)", "n**3"):
         return "n", 0.3
     if worst == "n*log2(n)":
         return "n", 0.35
@@ -315,6 +454,7 @@ def _build_estimate(info, name, extra_names):
         "recursive": info.recursive,
         "self_calls": info.self_calls,
         "halves_input": info.halves_input,
+        "variable_stride_depths": list(info.variable_stride_depths),
         "calls": {
             "sort": info.calls_sort,
             "heap": info.calls_heap,
@@ -376,5 +516,5 @@ def estimate_to_algorithm_kwargs(est):
 
 __all__ = [
     "StaticEstimate", "analyze_source", "analyze_file",
-    "estimate_to_algorithm_kwargs", "TIME_EXPRS",
+    "estimate_to_algorithm_kwargs", "TIME_EXPRS", "expr_label",
 ]

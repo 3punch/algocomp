@@ -145,10 +145,9 @@ def cmd_analyze(args) -> int:
 
 
 def _lbl(expr: str) -> str:
-    table = {"1": "O(1)", "log2(n)": "O(log n)", "n": "O(n)",
-             "n*log2(n)": "O(n log n)", "n**2": "O(n^2)",
-             "n**3": "O(n^3)", "2**n": "O(2^n)"}
-    return table.get(expr, "O(" + expr + ")")
+    from .static_analysis import expr_label
+
+    return expr_label(expr)
 
 
 def cmd_benchmark(args) -> int:
@@ -203,6 +202,9 @@ def cmd_infer(args) -> int:
         print(f"  static worst: {_lbl(static_est.time_worst)}"
               f" (confidence {static_est.confidence:.2f})")
         print(f"  empirical best fit: {fit.best_fit} (R^2={fit.fit_score:.3f})")
+        if fit.measured_exponent is not None:
+            print(f"  measured exponent : {fit.measured_exponent:.3f}"
+                  "  (log-log slope: ~1 linear, ~1.5 n*sqrt(n), ~2 quadratic)")
         print("  ranking:")
         for m in fit.ranking:
             print(f"    {m.label:<10} R^2={m.r_squared:.3f}")

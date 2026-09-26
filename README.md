@@ -266,9 +266,38 @@ payload, or define `def make_input(n): ...` in the file and pass
 `--input-factory make_input`. Each size runs in a fresh subprocess with
 `--timeout` seconds and stops early past `--max-time`.
 
-`infer` fits `O(1), O(log n), O(n), O(n log n), O(n^2), O(n^3)` by linear
-least-squares (`y = c·shape`) and reports `best_fit`, full `ranking` with R²,
-and warnings on noise / close calls / too few points.
+`infer` fits these growth models by least-squares through the origin
+(`y = c·shape`):
+
+| | | | |
+|---|---|---|---|
+| `O(1)` | `O(log n)` | `O(n)` | `O(n log log n)` |
+| `O(n log n)` | `O(n log^2 n)` | `O(n sqrt(n))` | `O(n^2)` |
+| `O(n^3)` | | | |
+
+It reports `best_fit`, the full `ranking` with R², the `measured_exponent`
+(the log-log slope of T vs n — ~1 linear, ~1.5 for `n*sqrt(n)`, ~2 quadratic),
+and warnings on noise, close calls or too few points.
+
+### Recognised loop shapes
+
+The static analyzer combines loop nesting depth with the *stride* of the
+innermost loop:
+
+| pattern | estimate |
+|---|---|
+| `for j in range(n)` inside `for i in range(n)` | `O(n^2)` |
+| `for j in range(i)` inside `for i in range(n)` | `O(n^2)` (still sweeps ~n/2) |
+| `k = 2; for j in range(0, n, k)` inside a loop | `O(n^2)` (constant stride) |
+| `for j in range(i*i, n+1, i)` inside a loop | `O(n log n)` — harmonic sum |
+| same, innermost of three levels | `O(n^2 log n)` |
+
+A stride driven by an enclosing loop (`i` here, whether the enclosing loop is a
+`for` or a `while`) makes the inner loop walk ~`n / stride` elements, so the
+depth-2 product collapses to `O(n log n)`. That is how a sieve of Eratosthenes
+is reported as `O(n log n)` rather than a false `O(n^2)`. The result is flagged
+with low confidence because the exact bound (`O(n log log n)` for a sieve) is
+not decidable statically.
 
 ---
 
