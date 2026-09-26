@@ -19,12 +19,15 @@ from __future__ import annotations
 __version__ = "1.0.0"
 
 from .algorithm import Algorithm, ComplexityProfile
+from .benchmark import BenchPoint, BenchResult, run_benchmark
 from .catalog import ALL_ALGORITHMS, CATEGORIES
 from .comparator import CaseVerdict, Verdict, compare
 from .complexity import HIERARCHY, Complexity, coerce
+from .curve_fit import CANDIDATES, FitReport, ModelFit, fit_points
 from .expr import ExprError, evaluate
 from .registry import Registry, default_registry as registry, load_definitions, register_custom
 from .reports import render, render_html, render_json, render_markdown, render_terminal
+from .static_analysis import StaticEstimate, analyze_file, analyze_source
 
 __all__ = [
     "__version__",
@@ -49,4 +52,14 @@ __all__ = [
     "render_markdown",
     "render_json",
     "render_html",
+    "StaticEstimate",
+    "analyze_source",
+    "analyze_file",
+    "BenchPoint",
+    "BenchResult",
+    "run_benchmark",
+    "CANDIDATES",
+    "ModelFit",
+    "FitReport",
+    "fit_points",
 ]

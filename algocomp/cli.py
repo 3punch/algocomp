@@ -119,9 +119,102 @@ def emit(text: str, args) -> None:
             sys.stdout.write("\n")
 
 
-# --------------------------------------------------------------------------- #
-# Commands
-# --------------------------------------------------------------------------- #
+def cmd_analyze(args) -> int:
+    from .static_analysis import analyze_file
+
+    if not os.path.exists(args.file):
+        print(f"error: file not found: {args.file}", file=sys.stderr)
+        return 2
+    est = analyze_file(args.file)
+    if args.json:
+        print(json.dumps(est.to_dict(), indent=2))
+        return 0
+    print(f"Static estimate: {args.file}")
+    print(f"  function : {est.details.get('function')}")
+    print(f"  time best/avg/worst : {_lbl(est.time_best)} / {_lbl(est.time_average)}"
+          f" / {_lbl(est.time_worst)}")
+    print(f"  space: {_lbl(est.space)}   confidence: {est.confidence:.2f}")
+    print("  notes:")
+    for note in est.notes:
+        print(f"    - {note}")
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            json.dump(est.to_dict(), fh, indent=2)
+        print(f"written: {args.out}")
+    return 0
+
+
+def _lbl(expr: str) -> str:
+    table = {"1": "O(1)", "log2(n)": "O(log n)", "n": "O(n)",
+             "n*log2(n)": "O(n log n)", "n**2": "O(n^2)",
+             "n**3": "O(n^3)", "2**n": "O(2^n)"}
+    return table.get(expr, "O(" + expr + ")")
+
+
+def cmd_benchmark(args) -> int:
+    from .benchmark import run_benchmark
+
+    sizes = [int(s) for s in parse_sizes(args.sizes)]
+    res = run_benchmark(args.file, sizes, function=args.function,
+                        repeats=args.repeats, timeout=args.timeout,
+                        input_kind=args.input, input_factory=args.input_factory,
+                        max_time=args.max_time)
+    if args.json:
+        print(json.dumps(res.to_dict(), indent=2))
+    else:
+        print(f"Benchmark: {args.file} :: {res.function}")
+        print(f"  {'n':>12} | {'seconds':>12} | {'peak bytes':>12}")
+        for p in res.points:
+            print(f"  {p.n:>12,} | {p.seconds:>12.6g} | {p.peak_bytes:>12,}")
+        for w in res.warnings:
+            print(f"  warning: {w}")
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            json.dump(res.to_dict(), fh, indent=2)
+        print(f"written: {args.out}")
+    return 0 if res.points else 1
+
+
+def cmd_infer(args) -> int:
+    from .benchmark import run_benchmark
+    from .curve_fit import fit_points
+    from .static_analysis import analyze_file
+
+    sizes = [int(s) for s in parse_sizes(args.sizes)]
+    res = run_benchmark(args.file, sizes, function=args.function,
+                        repeats=args.repeats, timeout=args.timeout,
+                        input_kind=args.input, input_factory=args.input_factory,
+                        max_time=args.max_time)
+    pts = [(p.n, p.seconds) for p in res.points]
+    fit = fit_points(pts)
+    try:
+        static_est = analyze_file(args.file)
+        static = static_est.to_dict()
+    except OSError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    payload = {"file": args.file, "function": res.function,
+               "static": static, "benchmark": res.to_dict(),
+               "fit": fit.to_dict()}
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"Infer: {args.file} :: {res.function}")
+        print(f"  static worst: {_lbl(static_est.time_worst)}"
+              f" (confidence {static_est.confidence:.2f})")
+        print(f"  empirical best fit: {fit.best_fit} (R^2={fit.fit_score:.3f})")
+        print("  ranking:")
+        for m in fit.ranking:
+            print(f"    {m.label:<10} R^2={m.r_squared:.3f}")
+        for w in list(res.warnings) + list(fit.warnings):
+            print(f"  warning: {w}")
+        print("  NOTE: static result is a heuristic; empirical fit depends on")
+        print("  sizes/repeats/machine. Confirm before quoting Big-O.")
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, indent=2)
+        print(f"written: {args.out}")
+    return 0 if res.points else 1
 
 
 def cmd_compare(args) -> int:
@@ -452,6 +545,39 @@ def build_parser() -> argparse.ArgumentParser:
 
     b = sub.add_parser("benchmarks", help="list algorithms that can be empirically verified", parents=[common])
     b.set_defaults(func=cmd_benchmarks)
+
+    a = sub.add_parser("analyze", help="estimate Big-O from Python source (heuristic)")
+    a.add_argument("file", help="Python file to analyze")
+    a.add_argument("--json", action="store_true", help="machine-readable output")
+    a.add_argument("--out", "-o", metavar="FILE", help="write JSON estimate to file")
+    a.set_defaults(func=cmd_analyze)
+
+    bm = sub.add_parser("benchmark", help="time an arbitrary Python file in a subprocess")
+    bm.add_argument("file", help="Python file defining function (default: main)")
+    bm.add_argument("--function", default="main", help="entry function (default: main)")
+    bm.add_argument("--sizes", default="100,1000,10000", help="input sizes")
+    bm.add_argument("--repeats", type=int, default=5, help="repeats per size")
+    bm.add_argument("--timeout", type=float, default=20.0, help="per-size timeout s")
+    bm.add_argument("--input", default="list", choices=["list", "sorted", "string"],
+                    help="default input builder")
+    bm.add_argument("--input-factory", default="", help="fn(n) in file for custom input")
+    bm.add_argument("--max-time", type=float, default=5.0, help="stop after slower size")
+    bm.add_argument("--json", action="store_true")
+    bm.add_argument("--out", "-o", metavar="FILE")
+    bm.set_defaults(func=cmd_benchmark)
+
+    inf = sub.add_parser("infer", help="static estimate + benchmark + curve fit")
+    inf.add_argument("file", help="Python file defining function (default: main)")
+    inf.add_argument("--function", default="main", help="entry function (default: main)")
+    inf.add_argument("--sizes", default="100,1000,10000", help="input sizes")
+    inf.add_argument("--repeats", type=int, default=5)
+    inf.add_argument("--timeout", type=float, default=20.0)
+    inf.add_argument("--input", default="list", choices=["list", "sorted", "string"])
+    inf.add_argument("--input-factory", default="")
+    inf.add_argument("--max-time", type=float, default=5.0)
+    inf.add_argument("--json", action="store_true")
+    inf.add_argument("--out", "-o", metavar="FILE")
+    inf.set_defaults(func=cmd_infer)
 
     return p
 

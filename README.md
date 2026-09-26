@@ -243,6 +243,33 @@ algo-compare verify bubble_sort --sizes 128:4096:5
 
 A doubling of `n` multiplies the time by `2^β`: ~2× for linear, ~4× for quadratic.
 
+### `analyze`, `benchmark`, `infer` — work with your own Python files
+
+These three commands bridge *declared* theory and *measured* reality for
+arbitrary code. They are heuristics — confirm before quoting Big-O.
+
+```bash
+# 1. static estimate from source structure (loops, recursion, sort/bisect/heap)
+algo-compare analyze my_algo.py
+algo-compare analyze my_algo.py --json -o estimate.json
+
+# 2. empirical timing in an isolated subprocess (time.perf_counter + tracemalloc)
+#    file must define e.g. `def main(data): ...`
+algo-compare benchmark my_algo.py --function main --sizes 100,1000,10000 --repeats 5
+
+# 3. both at once: static estimate + benchmark + least-squares model fit
+algo-compare infer my_algo.py --sizes 100,1000,10000 --repeats 5
+```
+
+`benchmark` input: `--input {list,sorted,string}` builds a default `list(range(n))`
+payload, or define `def make_input(n): ...` in the file and pass
+`--input-factory make_input`. Each size runs in a fresh subprocess with
+`--timeout` seconds and stops early past `--max-time`.
+
+`infer` fits `O(1), O(log n), O(n), O(n log n), O(n^2), O(n^3)` by linear
+least-squares (`y = c·shape`) and reports `best_fit`, full `ranking` with R²,
+and warnings on noise / close calls / too few points.
+
 ---
 
 ## How the comparison works
