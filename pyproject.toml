@@ -3,25 +3,39 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "algocomp"
+name = "algo-compare"
 version = "1.0.0"
 description = "Theoretical complexity comparison framework: pit two algorithms that solve the same task against each other."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
-keywords = ["algorithms", "big-o", "complexity", "benchmark", "education"]
+license = "MIT"
+authors = [
+    { name = "3punch" }
+]
+keywords = ["algorithms", "big-o", "complexity", "benchmark", "education", "static-analysis", "curve-fitting"]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
     "Topic :: Education",
     "Topic :: Software Development :: Testing",
 ]
 dependencies = []          # zero required dependencies
 
+[project.urls]
+Homepage = "https://github.com/3punch/algocomp"
+Repository = "https://github.com/3punch/algocomp"
+Issues = "https://github.com/3punch/algocomp/issues"
+
 [project.optional-dependencies]
 pretty = ["rich>=13"]      # nicer terminal tables (optional)
-dev = ["rich>=13"]
+dev = ["rich>=13", "build", "twine"]
 
 [project.scripts]
 algo-compare = "algocomp.cli:main"
