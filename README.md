@@ -2,10 +2,11 @@
 
 **A theoretical complexity-comparison framework for algorithms that solve the same task.**
 
-![tests](https://github.com/3punch/algocomp/actions/workflows/tests.yml/badge.svg)
-![python](https://img.shields.io/badge/python-3.10%2B-blue)
-![dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
-![license](https://img.shields.io/badge/license-MIT-green)
+[![PyPI version](https://img.shields.io/pypi/v/algo-compare.svg)](https://pypi.org/project/algo-compare/)
+[![Python versions](https://img.shields.io/pypi/pyversions/algo-compare.svg)](https://pypi.org/project/algo-compare/)
+[![CI tests](https://github.com/3punch/algocomp/actions/workflows/tests.yml/badge.svg)](https://github.com/3punch/algocomp/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-success.svg)](#)
 
 Give it two algorithms. It tells you who wins asymptotically, by how much, from which
 input size the advantage actually matters, where the trade-offs are (memory, stability,
@@ -145,27 +146,39 @@ $ algo-compare compare merge_sort quick_sort
 
 ## Install / run
 
-Nothing to install — run it straight from the source tree:
+### Install from PyPI (Recommended)
 
 ```bash
-cd algo-compare
-python3 algo-compare compare merge_sort quick_sort     # or ./algo-compare ...
-python3 -m algocomp.cli compare merge_sort quick_sort  # equivalent
+pip install algo-compare
 ```
 
-Optional install (gives you an `algo-compare` command anywhere):
+Optional rich formatting for styled terminal tables:
+```bash
+pip install "algo-compare[pretty]"
+```
+
+### Run without installing (zero setup)
+
+Run straight from source:
 
 ```bash
 git clone https://github.com/3punch/algocomp.git
 cd algocomp
-pip install -e .              # distribution: algocomp, command: algo-compare
-pip install -e ".[pretty]"    # + rich, for nicer terminal tables
+python3 algo-compare compare merge_sort quick_sort     # or ./algo-compare ...
+python3 -m algocomp.cli compare merge_sort quick_sort  # equivalent
 ```
 
-Run the test suite:
+Or install in editable mode for development:
 
 ```bash
-python3 -m unittest discover -s tests -t . -v     # 57 tests
+pip install -e .              # distribution: algo-compare, command: algo-compare
+pip install -e ".[pretty]"    # + rich
+```
+
+### Run tests
+
+```bash
+python3 -m unittest discover -s tests -t . -v     # 84 tests
 ```
 
 ---
@@ -486,19 +499,24 @@ algo-compare/
 │   ├── expr.py                      # safe expression parser/evaluator (AST whitelist)
 │   ├── complexity.py                # Complexity: expression + label + rank + growth exponent
 │   ├── algorithm.py                 # Algorithm & ComplexityProfile records
-│   ├── catalog.py                   # 200 algorithms with best/avg/worst time & space
+│   ├── catalog.py                   # 200+ algorithms with best/avg/worst time & space
 │   ├── registry.py                  # lookup, fuzzy search, custom definition files
 │   ├── comparator.py                # the verdict engine (dominance, crossovers, warnings)
 │   ├── matrix.py                    # multi-algorithm comparison grids
 │   ├── reports.py                   # terminal / Markdown / JSON / HTML renderers
-│   ├── verify.py                    # optional empirical benchmark + curve fitting
-│   └── cli.py                       # argument parsing and commands
+│   ├── static_analysis.py           # AST static complexity analyzer (loops, recursion, bisect/heap)
+│   ├── benchmark.py                 # isolated subprocess benchmarker with tracemalloc peak memory
+│   ├── curve_fit.py                 # least-squares growth model fitting & log-log slope inference
+│   ├── verify.py                    # built-in empirical benchmarks & verification
+│   └── cli.py                       # unified CLI entrypoint (compare, analyze, benchmark, infer)
 ├── examples/
 │   ├── my_algorithms.defs           # sample custom definitions
 │   └── generate_reports.py          # regenerates reports/
 ├── reports/                         # pre-generated sample reports (HTML/MD/txt)
-├── tests/test_algocomp.py           # 57 unit tests
-├── pyproject.toml
+├── tests/
+│   ├── test_algocomp.py             # core catalogue, comparison & CLI tests
+│   └── test_extensions.py           # static analysis, benchmark & curve fitting tests (84 tests total)
+├── pyproject.toml                   # PEP 621 package & build configuration
 └── Makefile                         # make test | demo | reports | matrix
 ```
 

@@ -39,6 +39,18 @@ jobs:
           python algo-compare categories
           python algo-compare benchmarks
 
+      - name: Smoke-test static analysis, benchmarking, and inference
+        run: |
+          python -c "
+          code = 'def main(arr):\n    return sorted(arr)\n'
+          with open('/tmp/test_sample.py', 'w') as f:
+              f.write(code)
+          "
+          python algo-compare analyze /tmp/test_sample.py
+          python algo-compare benchmark /tmp/test_sample.py --sizes 100,500 --repeats 2
+          python algo-compare infer /tmp/test_sample.py --sizes 100,500,1000 --repeats 2
+
+
       - name: Verify every report format renders for a sample of pairs
         run: |
           python - <<'PY'
