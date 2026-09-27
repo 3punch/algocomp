@@ -35,10 +35,13 @@ Issues = "https://github.com/3punch/algocomp/issues"
 
 [project.optional-dependencies]
 pretty = ["rich>=13"]      # nicer terminal tables (optional)
-dev = ["rich>=13", "build", "twine"]
+bot = ["python-telegram-bot>=20.0"]
+all = ["rich>=13", "python-telegram-bot>=20.0"]
+dev = ["rich>=13", "python-telegram-bot>=20.0", "build", "twine"]
 
 [project.scripts]
 algo-compare = "algocomp.cli:main"
+algo-compare-bot = "algocomp.bot:main"
 
 [tool.setuptools]
 packages = ["algocomp"]
