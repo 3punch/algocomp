@@ -104,6 +104,16 @@ class TestStaticAnalysis(unittest.TestCase):
         est = analyze_source("def main(:\n  broken")
         self.assertEqual(est.confidence, 0.1)
 
+    def test_sequence_multiplication_detected_as_linear(self):
+        est = analyze_source("n = int(input())\nprint(n * '*')\n")
+        self.assertEqual(est.time_worst, "n")
+        self.assertEqual(est.space, "n")
+
+    def test_list_multiplication_detected_as_linear(self):
+        est = analyze_source("def build(n):\n    return [0] * n\n")
+        self.assertEqual(est.time_worst, "n")
+        self.assertEqual(est.space, "n")
+
 
 class TestCurveFit(unittest.TestCase):
     def test_linear_data_fits_linear(self):

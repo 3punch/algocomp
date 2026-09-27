@@ -152,9 +152,16 @@ $ algo-compare compare merge_sort quick_sort
 pip install algo-compare
 ```
 
-Optional rich formatting for styled terminal tables:
+Optional extras:
 ```bash
+# Pretty terminal tables
 pip install "algo-compare[pretty]"
+
+# Telegram bot support
+pip install "algo-compare[bot]"
+
+# Everything (pretty terminal + Telegram bot)
+pip install "algo-compare[all]"
 ```
 
 ### Run without installing (zero setup)
@@ -178,7 +185,7 @@ pip install -e ".[pretty]"    # + rich
 ### Run tests
 
 ```bash
-python3 -m unittest discover -s tests -t . -v     # 84 tests
+python3 -m unittest discover -s tests -t . -v     # 86 tests
 ```
 
 ---
@@ -241,6 +248,23 @@ algo-compare verify bubble_sort --sizes 128:4096:5
 ```
 
 ```
+### Telegram Bot (`@algocompbot`)
+
+You can run your own AlgoCompare Telegram bot or interact with the official bot:
+
+```bash
+# Run the bot using the CLI command
+export TELEGRAM_BOT_TOKEN="your-bot-token"
+algo-compare-bot
+```
+
+Available bot commands:
+- `/compare <algo1> <algo2>` — Asymptotic comparison between any two algorithms.
+- `/info <algo>` — Full time/space complexity, stability, and in-place details.
+- `/list [category]` & `/categories` — Explore 200+ algorithms across categories.
+- `/analyze <code>` — Send Python code or upload `.py` files for instant static Big-O complexity analysis.
+
+
   declared worst-case : O(n^2) (growth exponent ≈ 2.000)
   measured exponent   : 1.992 (log-log least squares, R² = 1.000)
   verdict             : matches
@@ -515,7 +539,7 @@ algo-compare/
 ├── reports/                         # pre-generated sample reports (HTML/MD/txt)
 ├── tests/
 │   ├── test_algocomp.py             # core catalogue, comparison & CLI tests
-│   └── test_extensions.py           # static analysis, benchmark & curve fitting tests (84 tests total)
+│   └── test_extensions.py           # static analysis, benchmark & curve fitting tests (86 tests total)
 ├── pyproject.toml                   # PEP 621 package & build configuration
 └── Makefile                         # make test | demo | reports | matrix
 ```
