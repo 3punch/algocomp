@@ -222,6 +222,22 @@ class _Visitor(ast.NodeVisitor):
             self.info.allocates_list = True
         self.generic_visit(node)
 
+    def visit_BinOp(self, node: ast.BinOp) -> None:
+        if isinstance(node.op, ast.Mult):
+            left_seq = isinstance(node.left, (ast.Constant, ast.List, ast.Tuple)) and (
+                isinstance(getattr(node.left, "value", None), (str, bytes))
+                or isinstance(node.left, (ast.List, ast.Tuple))
+            )
+            right_seq = isinstance(node.right, (ast.Constant, ast.List, ast.Tuple)) and (
+                isinstance(getattr(node.right, "value", None), (str, bytes))
+                or isinstance(node.right, (ast.List, ast.Tuple))
+            )
+            if left_seq or right_seq:
+                self.info.calls_linear = True
+                self.info.allocates_list = True
+        self.generic_visit(node)
+
+
     def _inspect_recursive_call(self, node: ast.Call) -> None:
         for arg in node.args:
             rep = ast.unparse(arg) if hasattr(ast, "unparse") else ast.dump(arg)
