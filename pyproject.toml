@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "algo-compare"
-version = "1.0.0"
+version = "1.0.1"
 description = "Theoretical complexity comparison framework: pit two algorithms that solve the same task against each other."
 readme = "README.md"
 requires-python = ">=3.10"
