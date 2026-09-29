@@ -1,10 +1,11 @@
-.PHONY: help test demo reports matrix clean
+.PHONY: help test bigo demo reports matrix clean
 
 PY ?= python3
 
 help:
 	@echo "algo-compare — make targets"
 	@echo "  make test      run the unit test suite"
+	@echo "  make bigo      grade the Big-O estimator against the ground-truth corpus"
 	@echo "  make demo      run a few example comparisons in the terminal"
 	@echo "  make reports   regenerate the HTML/Markdown reports in reports/"
 	@echo "  make matrix    print the sorting complexity matrix"
@@ -17,6 +18,9 @@ demo:
 	$(PY) algo-compare compare merge_sort quick_sort
 	$(PY) algo-compare compare dijkstra_binary_heap bellman_ford --no-chart
 	$(PY) algo-compare compare jump_search binary_search
+
+bigo:
+	$(PY) -m tests.big_o_corpus
 
 matrix:
 	$(PY) algo-compare matrix --category sorting --space

@@ -118,6 +118,7 @@ $ algo-compare compare merge_sort quick_sort
 - [What it does](#what-it-does)
 - [Install / run](#install--run)
 - [Command reference](#command-reference)
+- [How accurate is `analyze`?](#how-accurate-is-analyze)
 - [How the comparison works](#how-the-comparison-works)
 - [Report formats](#report-formats)
 - [Extending it](#extending-it)
@@ -316,10 +317,41 @@ It reports `best_fit`, the full `ranking` with R², the `measured_exponent`
 (the log-log slope of T vs n — ~1 linear, ~1.5 for `n*sqrt(n)`, ~2 quadratic),
 and warnings on noise, close calls or too few points.
 
-### Recognised loop shapes
+### How accurate is `analyze`?
 
-The static analyzer combines loop nesting depth with the *stride* of the
-innermost loop:
+It is graded, not assumed. `tests/big_o_corpus.py` holds **53 algorithms with
+textbook-known complexity** (sorting, searching, DP, graphs, number theory,
+backtracking, divide & conquer), and `python -m tests.big_o_corpus` (also
+`make bigo`) scores the estimator against it. Current score:
+
+```
+exact tier      : 48/48  (must be perfect)
+conservative    : 4  (documented upper bounds, not exact)
+known limits    : 1  (documented fallbacks)
+holdout         : 13/15 exact, 15/15 pinned, 0 under-estimates
+```
+
+* **exact tier** — the estimate must equal the ground truth; the test suite
+  fails otherwise. This is the gate.
+* **conservative** — the finer class is not decidable from source shape, so the
+  analyzer names the next class *up* rather than guess: the sieve (`O(n log log
+  n)` → `O(n log n)`), BFS (`O(V+E)`, edge count unknown → `O(n^2)`),
+  Karatsuba (`O(n^1.585)` → `O(n^2)`) and Strassen (`O(n^2.807)` → `O(n^3)`).
+* **known limits** — a loop whose trip count is a *data value* (counting sort's
+  `for _ in range(counts[v])`) cannot be bounded by an AST walk. The fallback
+  (`O(n^2)`) is pinned in the corpus so the gap stays visible.
+* **holdout** — 15 further algorithms written *after* the rules were settled.
+  13 land on the exact class; the other 2 (shell sort, binary GCD) are one log
+  factor loose. Crucially, **0 of 15 answer below the truth**: the estimator is
+  allowed to be vague, never optimistic.
+
+It can name these classes: `O(1)`, `O(log n)`, `O(sqrt n)`, `O(n)`,
+`O(n log n)`, `O(n^2)`, `O(n^2 log n)`, `O(n^3)`, `O(n^3 log n)`, `O(2^n)`,
+`O(n!)`.
+
+### Recognised shapes
+
+**Loops** — nesting depth, stride, and bound shape:
 
 | pattern | estimate |
 |---|---|
@@ -328,13 +360,43 @@ innermost loop:
 | `k = 2; for j in range(0, n, k)` inside a loop | `O(n^2)` (constant stride) |
 | `for j in range(i*i, n+1, i)` inside a loop | `O(n log n)` — harmonic sum |
 | same, innermost of three levels | `O(n^2 log n)` |
+| `while lo <= hi: mid = (lo+hi)//2` | `O(log n)` |
+| `while exp: exp //= 2`, `while i < n: i *= 2`, `while b: a, b = b, a % b` | `O(log n)` — the bound is scaled by a constant factor |
+| `while d*d <= n: d += 1`, `for d in range(2, int(n**0.5)+1)` | `O(sqrt n)` |
+| a linear scan *inside* a halving loop | `O(n log n)` (binary search on the answer) |
+| loops *alongside* a halving loop | the loops win — a `while size < n: size *= 2` followed by two linear passes is `O(n)`, not `O(log n)` |
+| `sorted(...)` / `.sort()` | `O(n log n)` |
+| `heappush`/`heappop` inside a loop | `O(n log n)` |
 
-A stride driven by an enclosing loop (`i` here, whether the enclosing loop is a
-`for` or a `while`) makes the inner loop walk ~`n / stride` elements, so the
+A stride driven by an enclosing loop (`i` above, whether the enclosing loop is
+a `for` or a `while`) makes the inner loop walk ~`n / stride` elements, so the
 depth-2 product collapses to `O(n log n)`. That is how a sieve of Eratosthenes
-is reported as `O(n log n)` rather than a false `O(n^2)`. The result is flagged
-with low confidence because the exact bound (`O(n log log n)` for a sieve) is
-not decidable statically.
+is reported as `O(n log n)` rather than a false `O(n^2)`; it is flagged with
+low confidence because the true `O(n log log n)` is not decidable statically.
+
+**Recursion** — how many calls can run per invocation, and what they pass:
+
+| shape | estimate |
+|---|---|
+| one tail call per `return`, on a halved input (binary search) | `O(log n)` — the two `return f(...)` sites are mutually exclusive, so only one runs |
+| two calls on halves (merge sort) | `O(n log n)` |
+| *b* > 2 calls on halves (Karatsuba, Strassen) | `O(n^log2 b)` by the master theorem, rounded up to a class it can name |
+| two calls on un-halved parts (quick sort: `less`/`greater`, or `f(a, lo, i-1)` + `f(a, i+1, hi)`) | worst `O(n^2)`, best/average `O(n log n)` — the split's balance is unproven |
+| two calls, no halving (naive Fibonacci, Towers of Hanoi) | `O(2^n)` |
+| self-call in a loop that enumerates choices (permutations, N-queens) | `O(n!)` |
+| self-call in a loop over children (tree walks, `os.walk`) | `O(n)` — a descent, not an enumeration |
+| `if n in memo: return memo[n]` | `O(n)` states, or `O(n^2)` when two arguments vary (LCS, edit distance) |
+
+**Space** is estimated from allocation and recursion: `sorted()`/comprehensions
+/sequence-building (`[0] * n`) imply `O(n)`; recursion implies a stack of
+`O(log n)` (halving) or `O(n)`; a memo table implies its own size. A recursion
+that also allocates per level is reported as `O(n)`, since the copies dominate
+the stack.
+
+**Confidence** (0–1) tracks how much of the answer is structural. Anything
+below ~0.5 — strided sweeps, unproven `while` bounds, partitions of unknown
+balance, `O(n!)` guesses — is explicitly labelled a heuristic in the notes, and
+the corpus refuses to assert the cases it cannot actually prove.
 
 ---
 
@@ -538,10 +600,12 @@ algo-compare/
 │   └── generate_reports.py          # regenerates reports/
 ├── reports/                         # pre-generated sample reports (HTML/MD/txt)
 ├── tests/
+│   ├── big_o_corpus.py              # ground-truth Big-O corpus + holdout (run: make bigo)
+│   ├── test_big_o.py                # grades the estimator against that corpus
 │   ├── test_algocomp.py             # core catalogue, comparison & CLI tests
-│   └── test_extensions.py           # static analysis, benchmark & curve fitting tests (86 tests total)
+│   └── test_extensions.py           # static analysis, benchmark & curve fitting tests (113 tests total)
 ├── pyproject.toml                   # PEP 621 package & build configuration
-└── Makefile                         # make test | demo | reports | matrix
+└── Makefile                         # make test | bigo | demo | reports | matrix
 ```
 
 ---
@@ -593,10 +657,18 @@ the growth table, the crossover search, the JSON output and the charts.
   (e.g. dynamic-array growth) noted in the entry's notes.
 - Constants inside expressions are treated as given; the tool will not tell you that your
   `O(n)` has a 10⁶ loop count.
+- `analyze` is a *structural* estimator, so it can only be as good as the source shape.
+  It is graded against a 53-algorithm ground-truth corpus (see
+  [How accurate is `analyze`?](#how-accurate-is-analyze)): exact on 48, deliberately
+  conservative on 4, and it falls back on 1 it cannot resolve. When the shape does not
+  decide the class it rounds **up** — a loose bound is a warning, an under-estimate is a
+  lie — and says so with a low confidence score.
 
 **Verifying rather than trusting.** `verify` closes the loop for 20 entries; for the rest,
 the theoretical bound is what a textbook says, and the report's caveat notes say when the
-constant factor is the real story.
+constant factor is the real story. For your own code, `analyze` + `benchmark` + `infer`
+together are the honest workflow: the static estimate says what the structure implies, the
+timings say what the machine did, and the fit says which growth model is between them.
 
 ---
 

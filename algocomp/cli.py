@@ -128,16 +128,17 @@ def cmd_analyze(args) -> int:
     est = analyze_file(args.file)
     if args.json:
         print(json.dumps(est.to_dict(), indent=2))
-        return 0
-    print(f"Static estimate: {args.file}")
-    print(f"  function : {est.details.get('function')}")
-    print(f"  time best/avg/worst : {_lbl(est.time_best)} / {_lbl(est.time_average)}"
-          f" / {_lbl(est.time_worst)}")
-    print(f"  space: {_lbl(est.space)}   confidence: {est.confidence:.2f}")
-    print("  notes:")
-    for note in est.notes:
-        print(f"    - {note}")
+    else:
+        print(f"Static estimate: {args.file}")
+        print(f"  function : {est.details.get('function')}")
+        print(f"  time best/avg/worst : {_lbl(est.time_best)} / "
+              f"{_lbl(est.time_average)} / {_lbl(est.time_worst)}")
+        print(f"  space: {_lbl(est.space)}   confidence: {est.confidence:.2f}")
+        print("  notes:")
+        for note in est.notes:
+            print(f"    - {note}")
     if args.out:
+        # `--json -o file` prints *and* saves, like the other subcommands
         with open(args.out, "w", encoding="utf-8") as fh:
             json.dump(est.to_dict(), fh, indent=2)
         print(f"written: {args.out}")

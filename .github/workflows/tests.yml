@@ -28,6 +28,9 @@ jobs:
       - name: Run the test suite
         run: python -m unittest discover -s tests -t . -v
 
+      - name: Grade the Big-O estimator against the ground-truth corpus
+        run: python -m tests.big_o_corpus
+
       - name: Smoke-test the CLI (no dependencies needed)
         run: |
           python algo-compare compare merge_sort quick_sort --no-chart

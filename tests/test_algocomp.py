@@ -17,6 +17,7 @@ from algocomp.catalog import ALL_ALGORITHMS
 from algocomp.cli import main, parse_sizes
 from algocomp.complexity import Complexity, coerce
 from algocomp.expr import ExprError, evaluate, free_variables
+from algocomp import matrix as matrix_mod
 from algocomp.matrix import rank_algorithms, render_matrix
 from algocomp.registry import (Registry, load_definitions, load_definitions_into,
                                register_custom)
@@ -400,7 +401,12 @@ class TestMatrix(unittest.TestCase):
         algos = reg.filter(category="sorting")[:6]
         coloured = render_matrix(algos, include_space=True, color=True)
         self.assertIn("algorithm", coloured)
-        self.assertIn("★", coloured)
+        if matrix_mod.HAS_RICH:
+            # the rich renderer marks the best bound in each column with a star
+            self.assertIn("★", coloured)
+        else:
+            # without rich every path is the plain-text fallback
+            self.assertIn("*", coloured)
         plain = render_matrix(algos, include_space=True, color=False)
         self.assertNotIn("\x1b[", plain, "plain output must carry no ANSI codes")
         self.assertIn("*", plain)
